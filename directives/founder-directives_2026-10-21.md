@@ -37,3 +37,12 @@ The desperate hero happened because ungrounded agents invent. The fix:
 - The standard is the memory-suite standard: **clear separation between things he actually said and machine-generated content.** Agent memories of who he is, what GestaltView is and why, and the journey of making it get built from the read-only corpus — his words, attested — never invented, never filled from plausible assumptions. Ask, don't fill.
 - Until the agent-memory injection (corpus → agent memories) lands, an indexed repository is the interim source of truth. Treat the corpus as read-only: no agent writes to it, ever.
 - Ungrounded agents invent heroes that beg. Grounded agents quote.
+
+## 5. Ship incrementally — small PRs, not one big push (2026-10-21 ~16:30 EDT)
+
+Keith works hands-on: he pulls each piece into a Codespace, runs it, plays with it, and adjusts while the next piece is being built. Doing everything in the agent workspace and pushing once at the end breaks that loop.
+
+- **Open a PR per completed slice** — a vertical piece he can run, not a horizontal layer he can't touch yet. While one slice is in his hands, the next slice is already being built.
+- **Never go dark until "done."** If a slice takes more than a day, say so early and PR what's shippable.
+- **Each PR must be runnable on its own.** He will pull it into Codespaces and poke at it. If it needs three other unmerged branches to run, it's not a slice yet.
+- **His mid-stream adjustments are part of the process, not interruptions.** Build for the loop: he looks, runs, tweaks, and the next slice absorbs it.
