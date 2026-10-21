@@ -28,6 +28,17 @@ The purchasable layer of the Keith Soyka ecosystem.
 - `specs/care-package.md` — procedural care ethics & due diligence: what every build includes standard (ATTESTED)
 - `specs/builder-spec.md` — build spec for the team: phases, SEO contract, data contract, acceptance (DRAFT — under Keith's review)
 
+## Ops & outbound
+
+- `ops/revenue-sprint-7-day_2026-10-20.md` — the 7-day revenue integration sprint (Oct 20–27, 2026)
+- `outbound/pancake-context-pack_2026-10-20.md` — Pancake AI Brain context: locked prices, bounded scopes, voice rules, never-claim list
+
+## Where things come from
+
+- **Runtime** (Railway API + gestaltview-ai-v3.vercel.app) — APIs, skills, and the DI widget backend.
+- **Portfolio** (`keithsoyka0-coder/Portfolio`) — template, theme, content, and proof, merged in per the hub-and-spoke plan.
+- **This repo** — the site itself, and the single home for the operation's docs (internal and external).
+
 ## Working rules
 
 - PRs only. Nothing merges without Keith's "ship it."
