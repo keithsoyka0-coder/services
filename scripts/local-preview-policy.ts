@@ -3,16 +3,15 @@ export type PreviewEnvironment = Record<string, string | undefined>;
 import { resolve } from 'node:path';
 import { fileURLToPath } from 'node:url';
 
-/** Fail closed when local preview is invoked from a deploy or public-release environment. */
+/** Allow draft builds on Vercel, but fail closed on public-release configuration. */
 export function assertLocalPreviewPolicy(env: PreviewEnvironment): void {
   const blocked = [
-    env.VERCEL !== undefined ? 'VERCEL is set' : undefined,
     /^true$/i.test(env.PUBLIC_RELEASE?.trim() ?? '') ? 'PUBLIC_RELEASE=true' : undefined,
     /^true$/i.test(env.CONTENT_APPROVED?.trim() ?? '') ? 'CONTENT_APPROVED=true' : undefined,
     env.SITE_ORIGIN !== undefined && env.SITE_ORIGIN !== '' ? 'SITE_ORIGIN is non-empty' : undefined,
   ].filter((reason): reason is string => Boolean(reason));
   if (blocked.length) {
-    throw new Error(`Local draft preview only: deployment/public-release environment is blocked (${blocked.join(', ')}).`);
+    throw new Error(`Local draft preview only: public-release configuration is blocked (${blocked.join(', ')}).`);
   }
 }
 

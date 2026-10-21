@@ -13,7 +13,13 @@ npm run check
 npm run preview -- --port 4174
 ```
 
-Use `http://127.0.0.1:4174/` on this same computer. Do not forward the port, share a public preview URL or deploy these artifacts. Development and preview are loopback-only and reject non-local host access. The Vercel build configuration deliberately blocks deployment. Release flags and production-origin configuration are rejected rather than used to publish these drafts.
+Use `http://127.0.0.1:4174/` on this same computer. Do not forward the port. Development and preview remain loopback-only and reject non-local host access.
+
+## Owner-controlled Vercel build
+
+Keith requested removal of the repository's technical deployment blockers so he can create/connect the Vercel project and deliberately host the draft himself. The configured build is `npm run build && npm run verify:build`, with output directory `dist`. Vercel environment indicators are allowed; leave `SITE_ORIGIN` empty and keep `PUBLIC_RELEASE` and `CONTENT_APPROVED` unset or false. Those release/approval flags and any nonempty origin remain rejected; no new origin or API/CORS configuration is needed for this draft build.
+
+Hosting is not public-copy approval. Every route retains the draft banner and noindex/nofollow metadata; Vercel adds the same `X-Robots-Tag` response header. Robots disallows crawling and there is no sitemap. No project creation/linking, deployment, indexing request, domain/API modification or database operation is performed by this change. Noindex is not access control; Keith can configure Vercel access protection himself if the hosted draft must be private.
 
 `npm run dev` is available for local development. The generation step reads the source lane files and writes sanitized public-copy data to `src/generated/draft-pages.json`; it does not edit the source documents. Internal handoff text is excluded from the generated browser payload. Metadata uses the local draft titles/descriptions and noindex, nofollow. There are no production canonical, Open Graph, structured-data or sitemap outputs.
 
@@ -27,6 +33,6 @@ The hub consultation form is entirely disabled. No request is sent, stored, or a
 
 ## Verification
 
-`npm run check` runs strict TypeScript checks, tests, content generation, client/server builds, seven-route prerendering plus an internal-only 404, and generated-HTML checks. Tests cover draft rendering, safe Markdown handling, disabled consultation, noindex metadata, deployment refusal and local host policy. A local preview server's SPA fallback is not evidence of a deployed 404 status.
+`npm run check` runs strict TypeScript checks, tests, content generation, client/server builds, seven-route prerendering plus an internal-only 404, and generated-HTML checks. Tests cover draft rendering, safe Markdown handling, disabled consultation, noindex metadata, Vercel build permission, unsafe public-release rejection and local host policy. A local preview server's SPA fallback is not evidence of a deployed 404 status.
 
-Keith separately authorized a branch commit/push and an unmerged PR against `main` after verification. The coordinator reported that Services is not linked to a Vercel project, so no automatic preview is expected. No merge, deployment, project linking, Search Console action, database provisioning, migration or database write is authorized.
+Keith separately authorized branch updates and PR maintenance after verification. This build change does not authorize an agent to merge, deploy, link/create a project, submit to Search Console, provision a database, run migrations or write data. Historical local-only approval records remain unchanged.

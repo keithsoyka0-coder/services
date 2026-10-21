@@ -5,22 +5,44 @@ import { resolve } from 'node:path';
 import { assertLocalPreviewPolicy, assertLoopbackHost } from '../scripts/local-preview-policy';
 
 describe('local preview policy', () => {
-  it('rejects every deployment or public-release environment indicator', () => {
+  it.each(['1', ''])('allows a Vercel draft build with VERCEL=%j', (vercel) => {
+    expect(() => assertLocalPreviewPolicy({ VERCEL: vercel, VERCEL_ENV: 'production', CI: 'true' })).not.toThrow();
+  });
+
+  it('rejects unsafe public-release flags locally and on Vercel', () => {
     for (const env of [
-      { VERCEL: '1' },
-      { VERCEL: '' },
       { PUBLIC_RELEASE: 'true' },
+      { PUBLIC_RELEASE: ' TRUE ' },
       { CONTENT_APPROVED: 'true' },
+      { CONTENT_APPROVED: ' True ' },
       { SITE_ORIGIN: 'https://services.example.test' },
       { SITE_ORIGIN: ' ' },
     ]) {
       expect(() => assertLocalPreviewPolicy(env)).toThrow(/local draft preview/i);
+      expect(() => assertLocalPreviewPolicy({ VERCEL: '1', ...env })).toThrow(/local draft preview/i);
     }
   });
 
   it('allows ordinary local and CI environments without public-release flags', () => {
     expect(() => assertLocalPreviewPolicy({ CI: 'true' })).not.toThrow();
     expect(() => assertLocalPreviewPolicy({ SITE_ORIGIN: '' })).not.toThrow();
+  });
+
+  it('uses the verified draft build on Vercel and preserves hosting safeguards', () => {
+    const config = JSON.parse(readFileSync(resolve(process.cwd(), 'vercel.json'), 'utf8'));
+    expect(config.buildCommand).toBe('npm run build && npm run verify:build');
+    expect(config.outputDirectory).toBe('dist');
+    const headers = config.headers.find((rule: { source: string }) => rule.source === '/(.*)').headers;
+    expect(headers).toEqual(expect.arrayContaining([
+      { key: 'X-Robots-Tag', value: 'noindex, nofollow' },
+      { key: 'X-Content-Type-Options', value: 'nosniff' },
+      { key: 'Referrer-Policy', value: 'strict-origin-when-cross-origin' },
+      { key: 'Permissions-Policy', value: 'camera=(), microphone=(), geolocation=()' },
+      {
+        key: 'Content-Security-Policy',
+        value: "default-src 'self'; script-src 'self'; style-src 'self'; img-src 'self' data:; connect-src 'self'; font-src 'self'; object-src 'none'; base-uri 'self'; form-action 'none'; frame-ancestors 'none'",
+      },
+    ]));
   });
 
   it('accepts only explicit loopback host bindings', () => {
