@@ -152,7 +152,7 @@ export function DiDemo() {
         {profiles.map((profile) => <option key={profile.slug} value={profile.slug}>{profile.name}</option>)}
       </select>
       <label htmlFor="di-demo-message">Message</label>
-      <textarea id="di-demo-message" name="message" rows={4} value={message} onChange={(event) => setMessage(event.target.value)} maxLength={2400} disabled={loading} />
+      <textarea id="di-demo-message" name="message" rows={4} value={message} onChange={(event) => setMessage(Array.from(event.target.value).slice(0, MAX_MESSAGE_CODE_POINTS).join(''))} maxLength={2400} disabled={loading} />
       <div className="di-demo-actions">
         <button className="btn btn-primary" type="submit" disabled={loading}>{loading ? 'Sending…' : 'Send message'}</button>
         <button className="btn btn-ghost" type="button" onClick={reset} disabled={loading}>Reset</button>
