@@ -173,7 +173,7 @@ async function outputFiles(directory: string): Promise<string[]> {
 }
 const files = await outputFiles(dist);
 const expectedHtml = new Set([...pages.map(page => outputPath(page.path)), notFoundPath]);
-for (const file of files.filter(file => file.endsWith('.html'))) {
+for (const file of files.filter(file => /\.html$/i.test(file))) {
   if (!expectedHtml.has(file)) failures.push('Unexpected generated HTML route.');
 }
 const serverNames = [
