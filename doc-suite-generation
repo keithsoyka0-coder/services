@@ -1,0 +1,342 @@
+# © 2026 Keith Soyka / GestaltView · born:a1644e06ebca · prov:2026-10-21 · origin:derived
+workflow:
+  id: doc-suite-generation
+  version: 0.1.0-draft
+  status: DRAFT
+  workflow_format: gestaltview-v2-conceptual
+  schema_status: conceptual_only_not_validated_against_an_executable_runtime
+  title: Evidence-Grounded Document Suite Generator
+  purpose: >-
+    Turn the supplied document-suite information architecture and a confirmed
+    target repository snapshot into a cross-linked, reviewable draft suite.
+    Generate from inspected evidence where exemplars exist; treat absent
+    exemplars as fresh-template work and leave policy gaps for the owner.
+  source:
+    path: /home/ubuntu/upload/doc-suite-information-architecture_2026-10-21.md
+    declared_born_ref: a1644e06ebca
+    verifier_output_sha256: 92c4cdde53b55fa5acce02de63f7497744c822ef9f9b603d2f58dd026c10d5fa
+    verifier_output_born_ref: 92c4cdde53b5
+    captured_at: 2026-10-21
+    capture_status: read; verifier_digest_recorded; declared_lineage_unverified
+    provenance_note: >-
+      The source declares born:a1644e06ebca and origin:doc-suite-analysis. The inspected
+      Born On verifier accepts a fixed origin vocabulary that does not include
+      doc-suite-analysis, so it did not recognize/strip this seal line. Its digest is
+      recorded as verifier output, not as proof that the declared lineage ref matches.
+  target:
+    repository: unknown_until_resolved_at_run_time
+    ref_or_commit: unknown_until_resolved_at_run_time
+    output_root: staging_only_until_owner_approves_exact_destination
+  authority:
+    definition_status: draft_until_keith_attests
+    grade_and_claim_attestation: Keith_Soyka_only
+    product_policy_and_support_guarantees: owner_decision_required
+    assumptions_must_not_be_filled: true
+
+  scope:
+    in_scope:
+      - Inventory the 13 documented exemplars and four additional document types named in the source.
+      - Extract per-section purpose, entailments, source maps, lifecycle notes, and GestaltView-specific flags.
+      - Verify source maps against the selected repository snapshot before using them as evidence.
+      - Produce draft templates, a suite manifest, cross-links, evidence receipts, and an open-question register.
+      - Preserve the continuity family as a linked set: CurrentState, SessionHandoffPacket, Manifest, and ContextPersistenceProtocol.
+    out_of_scope:
+      - Editing source files or replacing existing repository documents.
+      - Removing GestaltView-specific content or publishing client-facing templates without owner review.
+      - Making product, privacy, pricing, pilot, licensing, or support-guarantee decisions.
+      - Handling, printing, copying, or embedding license keys, credentials, or secret values.
+      - Creating tickets, contacting third parties, applying migrations, deploying, or changing live services.
+      - Claiming runtime execution, production readiness, or a validated implementation of this YAML.
+
+  document_catalog:
+    source_backed_exemplars:
+      - {id: operational_change_log, exemplar: docs/CurrentState.md, lifecycle: maintained}
+      - {id: repo_atlas_and_scanner_companion, exemplar: docs/Manifest.md, lifecycle: maintained}
+      - {id: session_handoff_form, exemplar: docs/SessionHandoffPacket.md, lifecycle: handoff-time}
+      - {id: digital_intelligence_execution_flow, exemplar: docs/AIFlow.md, lifecycle: maintained}
+      - {id: http_api_flow_reference, exemplar: docs/APIFlow.md, lifecycle: maintained}
+      - {id: operator_runbook, exemplar: docs/OPERATIONS.md, lifecycle: build/handoff-time}
+      - {id: operating_contract, exemplar: docs/PlaybookSpec.md, lifecycle: build-time-and-maintained}
+      - {id: per_view_contract_registry, exemplar: docs/ROOM_DEFINITIONS.md, lifecycle: build-time-and-maintained}
+      - {id: orientation_map, exemplar: docs/DirectoryMapAndWorkflow.md, lifecycle: build-time}
+      - {id: directory_index, exemplar: specs/INDEX.md, lifecycle: maintained}
+      - {id: third_party_integration_contract, exemplar: docs/INTEGRATION.md, lifecycle: maintained}
+      - {id: continuity_protocol, exemplar: docs/ContextPersistenceProtocol.md, lifecycle: maintained}
+      - {id: packaging_and_governance_rulebook, exemplar: docs/GovernanceAndPackagingGates_v1.md, lifecycle: maintained}
+    additional_types:
+      - {id: quickstart, exemplar_status: no_runtime_exemplar_found, lifecycle: owner_input_required}
+      - {id: standalone_troubleshooting, exemplar_status: no_runtime_exemplar_found, lifecycle: owner_input_required}
+      - {id: license_key_handoff, exemplar_status: no_runtime_exemplar_found, lifecycle: owner_input_required}
+      - {id: root_readme, exemplar_status: exists_but_not_inventoried_in_source, lifecycle: inspect_before_classifying}
+    catalog_rules:
+      - Keep the source's lifecycle classifications as stated; do not infer missing ones.
+      - Inspect the existing root README before proposing changes; do not assume it is absent or stale.
+      - For absent exemplars, label a document as a fresh template, not as a derived document.
+      - Preserve the source's master ablation list as flags only; perform no ablation without explicit owner approval.
+
+  grades:
+    vocabulary: [verified, partial, planned, unsupported, ungraded]
+    producer_rule: Agents write grade ungraded and claims an empty list; they do not assign or promote grades.
+    propagation: >-
+      Each step carries forward the least-supported input state without upgrading it.
+      The producing step cannot assign its own grade. Any grade promotion requires
+      a separate Grade assessment and a typed human verification event.
+    unsupported_input: stop_and_hold_affected_claim_or_document
+    verification_event_required_fields: [who, method, source, occurred_at]
+    history: append_only
+    unresolved_contract:
+      grade_ordering: not_defined_by_inspected_source
+      activation_effect: >-
+        Do not enable until the grade ordering/enforcement behavior is specified
+        and approved; this draft does not invent an ordering for the vocabulary.
+    minimum_input_grade_by_step:
+      capture_ia: ungraded
+      capture_repo_evidence: ungraded
+      extract_document_contracts: ungraded
+      extract_repo_claims: ungraded
+      route_document_types: ungraded
+      synthesize_drafts: ungraded
+      grade_evidence: ungraded
+      human_review: ungraded
+      publish_approved_bundle: verified
+    output_grade_rule: ungraded_until_typed_human_attestation
+
+  inspection_receipt:
+    required_for_every_step: true
+    fields:
+      - received_inputs_with_hashes_or_source_spans
+      - action_performed
+      - output_and_evidence_links
+      - confidence_or_uncertainty_explained_in_plain_language
+      - inherited_grade_and_grade_history_reference
+      - exact_checks_and_results
+      - skipped_or_unavailable_checks
+      - timestamp_and_actor
+    absence_rule: >-
+      A step without this receipt is a contract violation; a missing file is absent
+      only from the inspected snapshot, never presumed absent globally.
+
+  safety_and_reversibility:
+    default_mode: dry_run
+    source_material: immutable
+    generated_material: isolated_per_document_in_staging
+    overwrite_existing_documents: false
+    external_actions: disabled
+    undo: discard_staged_generated_drafts_only
+    secrets: never_read_for_content_never_echoed_never_written_to_outputs
+    unresolved_or_contradictory_evidence: hold_and_surface_do_not_average_or_silently_reconcile
+
+  replay:
+    required: true
+    input_identity: canonical_source_bytes_and_snapshot_reference
+    behavior: rerun_same_steps_against_identical_inputs
+    divergence_output: side_by_side_diff_with_step_receipts
+    publication_gate: end_to_end_dry_run_on_real_inputs_and_human_review_required
+
+  cost:
+    per_step_estimates_usd: null
+    hard_workflow_budget_usd: null
+    activation_blocked_until: per_step_estimates_and_hard_cap_are_set
+    on_cap_exceeded: stop_execution
+
+  steps:
+    - id: capture_ia
+      primitive: Capture
+      minimum_input_grade: ungraded
+      purpose: Preserve the supplied information architecture as the immutable specification input.
+      inputs: [user_supplied_markdown_file]
+      actions:
+        - Preserve original bytes and compute a source hash.
+        - Record the source file's Born On reference and exact capture path.
+        - Do not reinterpret or mutate the source during capture.
+      outputs:
+        - immutable_source_fragment
+        - capture_receipt
+      output_grade: ungraded
+      cost_estimate_usd: null
+
+    - id: capture_repo_evidence
+      primitive: Capture
+      minimum_input_grade: ungraded
+      purpose: Establish the actual target-repository boundary and capture relevant source files.
+      inputs: [immutable_source_fragment, confirmed_repository_root]
+      actions:
+        - Record repository root, available ref/commit, and Git metadata; mark unavailable values unknown.
+        - Resolve every exemplar and source-map path against the live tree before treating it as evidence.
+        - Capture relevant docs, route/handler files, schemas/migrations, scripts, tests, configuration, and CI files with paths and content hashes.
+        - Record missing paths as missing_in_this_snapshot and record uninspected services as not_checked.
+      outputs: [immutable_repo_evidence_set, path_inventory, capture_receipt]
+      output_grade: ungraded
+      cost_estimate_usd: null
+
+    - id: extract_document_contracts
+      primitive: Extract
+      minimum_input_grade: ungraded
+      purpose: Convert the information architecture into an evidence-addressed catalog of document contracts.
+      inputs: [immutable_source_fragment]
+      actions:
+        - Extract each document type, lifecycle, major section, entailment, source-map instruction, and GestaltView-specific flag.
+        - Attach source file and exact line spans to every extracted claim.
+        - Preserve inferred lifecycle labels as inferred; do not upgrade them to observed facts.
+        - Record the continuity family and the source's canonical-over-orientation rule.
+        - Mark the three absent exemplars and the existing-but-uninventoried README exactly as stated.
+      malformed_claim_rule: claim_without_source_span_is_rejected
+      outputs: [document_contract_catalog, source_claims, extraction_receipt]
+      output_grade: ungraded
+      cost_estimate_usd: null
+
+    - id: extract_repo_claims
+      primitive: Extract
+      minimum_input_grade: ungraded
+      purpose: Ground every proposed document section in the actual target repository or an explicit owner decision.
+      inputs: [document_contract_catalog, immutable_repo_evidence_set]
+      actions:
+        - Map each section to concrete repository evidence or label it owner_policy_required.
+        - Record exact paths, line ranges or symbols, content hashes, and repository ref when available.
+        - Compare the orientation map with the per-view contract registry; prefer the registry only when the inspected source confirms that rule applies.
+        - Keep code-confirmed facts, source-document claims, human decisions, and unknowns distinct.
+        - Ask the owner where evidence might live before treating a requirement as unverifiable.
+      malformed_claim_rule: claim_without_source_span_is_rejected
+      outputs: [section_evidence_map, conflicts_and_unknowns, extraction_receipt]
+      output_grade: ungraded
+      cost_estimate_usd: null
+
+    - id: route_document_types
+      primitive: Route
+      minimum_input_grade: ungraded
+      purpose: Choose a visible generation path for each document without masking missing evidence.
+      editable_policy:
+        - Existing exemplar plus verified repository evidence routes to an evidence-derived draft.
+        - No exemplar routes to a fresh-template draft with owner questions visible.
+        - Existing but uninventoried README routes to inspect_then_propose_update; never assume its content.
+        - Missing policy or source evidence routes to hold_for_owner_input.
+        - GestaltView-specific sections are flagged, not ablated.
+      inputs: [document_contract_catalog, section_evidence_map, conflicts_and_unknowns]
+      outputs: [per_document_route_decisions, route_rationales, route_receipt]
+      output_grade: ungraded
+      cost_estimate_usd: null
+
+    - id: synthesize_drafts
+      primitive: Synthesize
+      minimum_input_grade: ungraded
+      purpose: Draft the document suite while preserving claim-to-source provenance and lifecycle behavior.
+      inputs: [per_document_route_decisions, section_evidence_map, document_contract_catalog]
+      actions:
+        - Produce the 13 source-backed exemplar types and four additional types named in the source, maintaining evidence-derived vs fresh-template labels.
+        - Build the continuity family as a cross-linked set rather than four disconnected files.
+        - For maintained docs, include the specified freshness, dated-amendment, related-document, and known-limitations structure where supported by the source.
+        - For CurrentState, preserve append-only history; generate only a proposed new entry or summary surface, never rewrite historical entries.
+        - Preserve the source's generic section skeletons while only flagging GestaltView-specific material for review.
+        - Leave unsourced policy sections blank or marked owner_input_required; never fill from convention or guesswork.
+        - Keep contradictions visible and attach a weave map from each generated statement to its source claims.
+      outputs: [staged_document_drafts, weave_map, synthesis_receipt]
+      output_grade: ungraded
+      cost_estimate_usd: null
+
+    - id: grade_evidence
+      primitive: Grade
+      minimum_input_grade: ungraded
+      purpose: Assess each generated claim against this step's evidence and prepare a separate, reviewable grade proposal.
+      inputs: [staged_document_drafts, weave_map, section_evidence_map]
+      separation:
+        producer: synthesize_drafts
+        grader: independent_evidence_assessment
+        persisted_grade_writer: Keith_Soyka_only
+      actions:
+        - Evaluate only the cited evidence available for each claim.
+        - Keep source-backed claims, partial inferences, planned template content, unsupported claims, and ungraded claims visibly distinct.
+        - Do not persist a grade, add claim IDs, or promote any output.
+        - Prepare a typed verification-event proposal with who, method, source, and occurred_at fields for human review.
+      outputs: [claim_grade_assessment_draft, held_claims, grade_receipt]
+      output_grade: ungraded
+      cost_estimate_usd: null
+
+    - id: human_review
+      primitive: Review
+      minimum_input_grade: ungraded
+      purpose: Let Keith inspect the drafts, evidence weave map, grade proposals, and unresolved decisions before attestation.
+      inputs: [staged_document_drafts, weave_map, claim_grade_assessment_draft, conflicts_and_unknowns]
+      actions:
+        - Accept, revise, reject, or hold each document and material claim; preserve rejection history additively.
+        - Confirm whether GestaltView-specific content is retained, generalized, or later ablated; do not perform ablation in this workflow without an explicit decision.
+        - Complete typed verification-event fields only when a claim is actually verified against its named source.
+        - Record the human decision separately from the producing step; no silent grade promotion.
+      outputs: [review_decisions, optional_human_verification_events, review_receipt]
+      output_grade: ungraded_until_human_event_is_recorded
+      cost_estimate_usd: null
+
+    - id: publish_approved_bundle
+      primitive: Publish
+      minimum_input_grade: verified
+      purpose: Deliver only the explicitly approved document drafts and their evidence receipts.
+      inputs: [review_decisions, optional_human_verification_events, staged_document_drafts]
+      preconditions:
+        - End-to-end dry run has completed on real repository inputs.
+        - Identical-input replay and side-by-side diff are available.
+        - Keith has attested the included claims with typed verification events.
+        - Exact output destination and contents have been approved.
+        - Per-step cost estimates and hard budget cap are configured before enablement.
+      actions:
+        - Publish approved drafts and manifest to the approved destination without overwriting source documents.
+        - Preserve the grade and provenance shown on each output; publication never changes a grade.
+        - Record delivered paths, hashes, approval event, and any held documents.
+      outputs: [approved_document_suite, delivery_receipt]
+      output_grade: inherited_without_promotion
+      cost_estimate_usd: null
+
+  dry_run_plan:
+    status: planned_not_executed
+    sampling_policy: >-
+      Stratified sample across maintained, handoff-time, build-time, existing-but-uninventoried,
+      and no-exemplar document types; include the full four-document continuity family as a
+      cross-link consistency check. Use only the captured target-repository snapshot.
+    sample:
+      - docs/CurrentState.md
+      - docs/Manifest.md
+      - docs/SessionHandoffPacket.md
+      - docs/ROOM_DEFINITIONS.md
+      - docs/ContextPersistenceProtocol.md
+      - docs/AIFlow.md
+      - docs/INTEGRATION.md
+      - root README.md
+      - quickstart_template
+      - standalone_troubleshooting_template
+      - license_key_handoff_template
+    checks:
+      - Every generated section links to a source span or is explicitly held for owner input.
+      - Existing exemplars and fresh templates are never conflated.
+      - The four continuity documents link to each other and preserve their separate roles.
+      - GestaltView-specific material remains flagged and intact pending owner decision.
+      - Missing or unavailable repository evidence is not reported as globally absent or as a pass.
+      - Replay the same captured inputs and show output divergence side by side.
+      - No source document, live service, database, deployment, ticket, or external recipient is modified or contacted.
+    publish_condition: no_publish_until_real_input_end_to_end_dry_run_and_human_attestation
+
+  open_questions:
+    - id: execution_schema
+      question: Which workflow runner or YAML schema should this draft target?
+      why_blocked: No matching executable document-suite workflow schema was found in the inspected repository.
+    - id: grade_ordering
+      question: What exact grade ordering and structural refusal behavior should the runtime enforce?
+      why_blocked: The inspected invariant source names grades but does not define their ordering.
+    - id: cost_and_budget
+      question: What model/tool cost estimates and hard workflow budget should apply?
+      why_blocked: No cost profile or budget was supplied; enablement stays blocked.
+    - id: fresh_template_policy
+      question: Where are the authoritative requirements for quickstart, troubleshooting, and license-key handoff?
+      why_blocked: The source says no runtime exemplars were found; policy claims must come from the owner or another cited source.
+    - id: readme_scope
+      question: Should the existing root README be refreshed in place or only represented as a proposed draft?
+      why_blocked: The source notes the README exists but was not inventoried; capture and review it before routing.
+    - id: client_ablation
+      question: Should GestaltView-specific sections remain, be generalized, or be ablated for any client-facing suite?
+      why_blocked: The source explicitly says the ablation list is flagged only, not ablated.
+    - id: output_destination
+      question: Where should approved document drafts be delivered, and which exact files may be written?
+      why_blocked: The target repo path and file-level write approval are not encoded in the source artifact.
+
+  founder_jurisdiction:
+    product_name: not_decided_by_this_workflow
+    durham_pilot_identity: not_applicable_unless_pilot_content_is_requested
+    plk_privacy_posture: owner_decision_required_if_template_content_depends_on_it
+    support_guarantees: owner_decision_required_if_template_content_depends_on_them
