@@ -35,7 +35,12 @@ The purchasable layer of the Keith Soyka ecosystem.
 
 ## Integrations
 
+
 - `integrations/portfolio-canonical-swap.md` — Builder brief: portfolio canonical domain swap (fold-in for the portfolio repo)
+
+## SEO
+
+- `seo/seo-plan-and-page-matrix.md` — SEO lane draft: seven-page intent matrix, canonical/OG contract, structured data, proof briefs, robots/sitemap rules (for Builder + Quill, not published copy)
 
 ## Where things come from
 
