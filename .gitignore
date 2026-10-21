@@ -1,0 +1,10 @@
+# © 2026 Keith Soyka / GestaltView · provenance: services Phase 1 builder
+node_modules/
+dist/
+dist-server/
+.env
+.env.*
+!.env.example
+.vercel/
+coverage/
+*.log
