@@ -33,6 +33,7 @@ The purchasable layer of the Keith Soyka ecosystem.
 - PRs only. Nothing merges without Keith's "ship it."
 - Prices match the approved offering spec byte-for-byte. Never invent testimonials, client names, or statistics.
 - Skills and superpowers come from the GestaltView repo's `.agents/skills/` (`manifest.json` is source of truth).
+- Stack: React — not a static site. Live API calls (DI widget, consultation path), and the most comprehensive footing for multi-dimensional interactive UI.
 - Verification before done: typecheck + build green, every link resolves, sitemap current, no secrets in the repo.
 
 ## Team lanes
