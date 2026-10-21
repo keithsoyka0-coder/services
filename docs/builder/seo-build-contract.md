@@ -2,7 +2,7 @@
 
 © 2026 Keith Soyka / GestaltView · provenance: services Phase 1 builder
 
-This contract describes the current **local-only internal review preview** for seven Quill drafts. It does not approve or supply public copy, commercial scope, proof, an origin, deployment, or publication. `docs/lanes/**` and `docs/approvals/**` remain frozen and are not build inputs.
+This contract describes the current **draft-only internal review build** for seven Quill drafts, including Keith's requested Vercel build compatibility. It does not approve or supply public copy, commercial scope, proof, an origin, agent deployment, or publication. `docs/lanes/**` and `docs/approvals/**` remain frozen; generation reads the lane content without modifying it.
 
 ## SSR and generated content
 
@@ -16,13 +16,13 @@ Every content route and the generated 404 render this exact visible banner:
 
 Each spoke also visibly states `Scope approval pending` and `Proof approval pending`. Visible `PROOF PLACEHOLDER` text is allowed as a conspicuous placeholder and is not proof. Do not include internal handoff, license, degraded-mechanics, TODO, invented proof links, or any external clickable URL in local preview HTML.
 
-## Local-only policy
+## Draft build and local serving policy
 
 - `npm run dev` and `npm run preview` bind only to `127.0.0.1`; Vite also permits only the `localhost` and `127.0.0.1` Host values, and rejects a non-loopback CLI host override.
 - Both Vite dev and preview emit `X-Robots-Tag: noindex, nofollow`; dev injects a matching robots meta tag if absent. Prerendered HTML carries the same robots metadata.
 - `npm run dev` and `npm run build` preflight the environment and regenerate the draft JSON. `npm run preview` preflights before startup.
-- Local preview is blocked if `VERCEL` is set, `PUBLIC_RELEASE=true`, `CONTENT_APPROVED=true`, or `SITE_ORIGIN` is non-empty. `CI=true` alone is not blocked.
-- `vercel.json` has an unconditional failing build command for this phase; its security headers are retained. It is not a publication pipeline.
+- `VERCEL` and `CI` indicators are allowed. `PUBLIC_RELEASE=true`, `CONTENT_APPROVED=true`, and any nonempty `SITE_ORIGIN` remain blocked, including in Vercel environments. Hosting permission does not grant content approval.
+- `vercel.json` runs `npm run build && npm run verify:build` and serves `dist`. All existing security headers remain; a global `X-Robots-Tag: noindex, nofollow` header also covers hosted responses. Keith creates/connects the project and makes any deployment decision himself; this change performs neither operation.
 
 Metadata is deliberately restricted to the escaped `<title>`, optional description, and `noindex, nofollow` robots tag for **every** page, regardless of source, origin, production, or approval flags. No canonical, Open Graph, JSON-LD/schema, or sitemap output is available. `safeOrigin()` remains only as an inert utility; it is not used in generated output. `/robots.txt` disallows crawling, and any stale sitemap is removed.
 

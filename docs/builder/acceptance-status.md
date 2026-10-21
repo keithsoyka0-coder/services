@@ -2,6 +2,14 @@
 
 © 2026 Keith Soyka / GestaltView · provenance: 2026-10-20 · origin: Builder
 
+## Current build scope
+
+Keith requested removing the technical Vercel build blockers while retaining every draft/content/data safeguard. The configured Vercel command is now `npm run build && npm run verify:build`; Vercel environment indicators are allowed, while release/approval flags and a nonempty `SITE_ORIGIN` remain rejected. Vercel responses add `X-Robots-Tag: noindex, nofollow` without relaxing existing security headers. Keith handles project setup and any deliberate deployment himself. No agent deployment, project linking, merge, indexing request, database write or API/CORS domain change is authorized. See the [current quickstart](quickstart.md).
+
+## Historical local-draft handoff
+
+The original validation and authorization record below describes the initial local-only implementation; its deployment-blocker checks are superseded by the current build scope above, not by public-copy approval.
+
 This is a local draft implementation, **not** acceptance of the complete published Phase 1 site. Keith authorized local draft rendering and, separately, committing/pushing a branch and opening an unmerged PR. The coordinator reported that the Services repository is not currently linked to a Vercel project, so an automatic Vercel preview is not expected. No project was created or linked.
 
 ## What is verified
