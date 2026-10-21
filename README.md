@@ -33,6 +33,10 @@ The purchasable layer of the Keith Soyka ecosystem.
 - `ops/revenue-sprint-7-day_2026-10-20.md` — the 7-day revenue integration sprint (Oct 20–27, 2026)
 - `outbound/pancake-context-pack_2026-10-20.md` — Pancake AI Brain context: locked prices, bounded scopes, voice rules, never-claim list
 
+## Integrations
+
+- `integrations/portfolio-canonical-swap.md` — Builder brief: portfolio canonical domain swap (fold-in for the portfolio repo)
+
 ## Where things come from
 
 - **Runtime** (Railway API + gestaltview-ai-v3.vercel.app) — APIs, skills, and the DI widget backend.
