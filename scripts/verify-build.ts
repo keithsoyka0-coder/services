@@ -102,7 +102,7 @@ for (const page of pages) {
     if (!html.includes('href="https://console.groq.com/docs/your-data"')) failures.push('Integration disclosure must link the exact approved Groq data URL.');
     const expectedProfiles = ['the-weaver', 'the-tailor', 'cascade-engineer', 'the-algorithm'];
     const select = html.match(/<select\b[^>]*>[\s\S]*?<\/select>/i)?.[0] ?? '';
-    const profiles = [...select.matchAll(/<option\b[^>]*\bvalue=(["'])(.*?)\1/gi)].map(match => match[2]).filter(Boolean);
+    const profiles = [...select.matchAll(/<option\b[^>]*(?:\s)value=(["'])(.*?)\1/gi)].map(match => match[2]).filter(Boolean);
     if (profiles.length !== expectedProfiles.length || expectedProfiles.some(slug => profiles.filter(value => value === slug).length !== 1)) {
       failures.push('Integration selector must contain exactly the four approved profiles.');
     }
