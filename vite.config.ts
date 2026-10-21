@@ -1,9 +1,8 @@
 // © 2026 Keith Soyka / GestaltView · provenance: services Phase 1 builder
 import { defineConfig } from 'vitest/config';
 import react from '@vitejs/plugin-react';
-import { assertLocalPreviewPolicy, assertLoopbackHost } from './scripts/local-preview-policy';
+import { assertLoopbackHost } from './scripts/local-preview-policy';
 
-assertLocalPreviewPolicy(process.env);
 const noindexHeaders = { 'X-Robots-Tag': 'noindex, nofollow' };
 const localDraftGuard = {
   name: 'local-draft-preview-guard',

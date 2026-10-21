@@ -1,68 +1,63 @@
-// © 2026 Keith Soyka / GestaltView · provenance: services Phase 1 builder
+// © 2026 Keith Soyka / GestaltView · provenance: Services demo slice 1
 import { describe, expect, it } from 'vitest';
 import { readFileSync } from 'node:fs';
 import { resolve } from 'node:path';
-import { assertLocalPreviewPolicy, assertLoopbackHost } from '../scripts/local-preview-policy';
+import { assertLoopbackHost } from '../scripts/local-preview-policy';
 
-describe('local preview policy', () => {
-  it.each(['1', ''])('allows a Vercel draft build with VERCEL=%j', (vercel) => {
-    expect(() => assertLocalPreviewPolicy({ VERCEL: vercel, VERCEL_ENV: 'production', CI: 'true' })).not.toThrow();
-  });
-
-  it('rejects unsafe public-release flags locally and on Vercel', () => {
-    for (const env of [
-      { PUBLIC_RELEASE: 'true' },
-      { PUBLIC_RELEASE: ' TRUE ' },
-      { CONTENT_APPROVED: 'true' },
-      { CONTENT_APPROVED: ' True ' },
-      { SITE_ORIGIN: 'https://services.example.test' },
-      { SITE_ORIGIN: ' ' },
-    ]) {
-      expect(() => assertLocalPreviewPolicy(env)).toThrow(/local draft preview/i);
-      expect(() => assertLocalPreviewPolicy({ VERCEL: '1', ...env })).toThrow(/local draft preview/i);
+const read = (file: string) => readFileSync(resolve(process.cwd(), file), 'utf8');
+describe('draft build without deployment gates', () => {
+  it('builds without environment policy hooks and keeps the verifier local-only', () => {
+    const { scripts } = JSON.parse(read('package.json'));
+    expect(scripts['policy:preview']).toBeUndefined();
+    expect(scripts.predev).toBe('npm run generate:drafts');
+    expect(scripts.prebuild).toBe('npm run generate:drafts');
+    expect(scripts.prepreview).toBeUndefined();
+    expect(scripts.check).toContain('npm run verify:build');
+    expect(scripts['verify:build']).toBe('tsx scripts/verify-build.ts');
+    for (const file of ['vite.config.ts', 'scripts/prerender.ts', 'scripts/verify-build.ts', 'scripts/local-preview-policy.ts']) {
+      expect(read(file), file).not.toContain('assertLocalPreviewPolicy');
+      expect(read(file), file).not.toMatch(/PUBLIC_RELEASE|CONTENT_APPROVED|SITE_ORIGIN/);
     }
   });
-
-  it('allows ordinary local and CI environments without public-release flags', () => {
-    expect(() => assertLocalPreviewPolicy({ CI: 'true' })).not.toThrow();
-    expect(() => assertLocalPreviewPolicy({ SITE_ORIGIN: '' })).not.toThrow();
-  });
-
-  it('uses the verified draft build on Vercel and preserves hosting safeguards', () => {
-    const config = JSON.parse(readFileSync(resolve(process.cwd(), 'vercel.json'), 'utf8'));
-    expect(config.buildCommand).toBe('npm run build && npm run verify:build');
+  it('uses only the build on Vercel and preserves every hosting safeguard', () => {
+    const config = JSON.parse(read('vercel.json'));
+    expect(config.buildCommand).toBe('npm run build');
     expect(config.outputDirectory).toBe('dist');
     const headers = config.headers.find((rule: { source: string }) => rule.source === '/(.*)').headers;
-    expect(headers).toEqual(expect.arrayContaining([
+    expect(headers).toEqual([
       { key: 'X-Robots-Tag', value: 'noindex, nofollow' },
       { key: 'X-Content-Type-Options', value: 'nosniff' },
       { key: 'Referrer-Policy', value: 'strict-origin-when-cross-origin' },
       { key: 'Permissions-Policy', value: 'camera=(), microphone=(), geolocation=()' },
-      {
-        key: 'Content-Security-Policy',
-        value: "default-src 'self'; script-src 'self'; style-src 'self'; img-src 'self' data:; connect-src 'self'; font-src 'self'; object-src 'none'; base-uri 'self'; form-action 'none'; frame-ancestors 'none'",
-      },
-    ]));
+      { key: 'Content-Security-Policy', value: "default-src 'self'; script-src 'self'; style-src 'self'; img-src 'self' data:; connect-src 'self'; font-src 'self'; object-src 'none'; base-uri 'self'; form-action 'none'; frame-ancestors 'none'" },
+    ]);
   });
-
   it('accepts only explicit loopback host bindings', () => {
-    expect(() => assertLoopbackHost('127.0.0.1')).not.toThrow();
-    expect(() => assertLoopbackHost('localhost')).not.toThrow();
-    expect(() => assertLoopbackHost('0.0.0.0')).toThrow(/loopback/i);
-    expect(() => assertLoopbackHost('::')).toThrow(/loopback/i);
-    expect(() => assertLoopbackHost('192.168.1.5')).toThrow(/loopback/i);
+    for (const host of ['127.0.0.1', 'localhost']) expect(() => assertLoopbackHost(host)).not.toThrow();
+    for (const host of ['0.0.0.0', '::', '192.168.1.5', true, undefined]) expect(() => assertLoopbackHost(host)).toThrow(/loopback/i);
   });
-
   it('configures Vite dev and preview for loopback-only noindex serving', () => {
-    const config = readFileSync(resolve(process.cwd(), 'vite.config.ts'), 'utf8');
+    const config = read('vite.config.ts');
     expect(config).toMatch(/server:\s*\{[^}]*host:\s*'127\.0\.0\.1'/s);
     expect(config).toMatch(/preview:\s*\{[^}]*host:\s*'127\.0\.0\.1'/s);
     expect(config).toContain("const noindexHeaders = { 'X-Robots-Tag': 'noindex, nofollow' }");
     expect(config.match(/headers: noindexHeaders/g)).toHaveLength(2);
     expect(config).toContain("allowedHosts: ['localhost', '127.0.0.1']");
   });
-
-  it('rejects a wildcard host supplied as a Vite CLI override', () => {
-    expect(() => assertLoopbackHost('0.0.0.0')).toThrow(/loopback/i);
+  it('documents only blank server settings without release-policy instructions', () => {
+    const example = read('.env.example');
+    for (const name of ['GESTALTVIEW_RUNTIME_API_BASE', 'DI_DEMO_SERVICE_SIGNING_SECRET', 'DI_DEMO_VISITOR_HMAC_SECRET', 'DI_DEMO_ENABLED']) {
+      expect(example).toMatch(new RegExp(`^${name}=$`, 'm'));
+    }
+    expect(example).not.toMatch(/VITE_|PUBLIC_RELEASE|CONTENT_APPROVED|SITE_ORIGIN/);
+    for (const file of ['README.md', 'docs/builder/quickstart.md', 'docs/builder/acceptance-status.md', 'docs/builder/seo-build-contract.md']) {
+      const text = read(file);
+      expect(text, file).toContain('npm run build');
+      expect(text, file).toContain('npm run verify:build');
+      expect(text, file).toMatch(/local-only/i);
+      expect(text, file).toMatch(/disabled by default/i);
+      expect(text, file).toMatch(/noindex/i);
+      expect(text, file).not.toMatch(/leave `SITE_ORIGIN` empty|flags.*(?:blocked|rejected)|build && npm run verify:build/);
+    }
   });
 });

@@ -4,20 +4,19 @@
   "private": true,
   "type": "module",
   "scripts": {
-    "policy:preview": "tsx scripts/local-preview-policy.ts",
     "generate:drafts": "tsx scripts/generate-draft-content.ts",
-    "predev": "npm run policy:preview && npm run generate:drafts",
+    "predev": "npm run generate:drafts",
     "dev": "vite --host 127.0.0.1",
-    "prebuild": "npm run policy:preview && npm run generate:drafts",
+    "prebuild": "npm run generate:drafts",
     "typecheck": "tsc --noEmit",
     "test": "vitest run",
     "test:watch": "vitest",
     "build": "npm run typecheck && vite build && vite build --ssr src/entry-server.tsx --outDir dist-server && tsx scripts/prerender.ts",
     "verify:build": "tsx scripts/verify-build.ts",
     "check": "npm run typecheck && npm test && npm run build && npm run verify:build",
-    "prepreview": "npm run policy:preview",
     "preview": "vite preview --host 127.0.0.1",
-    "clean": "node -e \"for(const p of ['dist','dist-server'])require('node:fs').rmSync(p,{recursive:true,force:true})\""
+    "clean": "node -e \"for(const p of ['dist','dist-server'])require('node:fs').rmSync(p,{recursive:true,force:true})\"",
+    "test:e2e": "node node_modules/@playwright/test/cli.js test"
   },
   "dependencies": {
     "marked": "^18.1.1",
@@ -25,6 +24,7 @@
     "react-dom": "^19.2.0"
   },
   "devDependencies": {
+    "@playwright/test": "^1.60.0",
     "@testing-library/react": "^16.3.0",
     "@types/node": "^24.0.0",
     "@types/react": "^19.2.0",

@@ -29,12 +29,30 @@ describe('authorized local-only Quill draft preview', () => {
     expect(screen.getByText('Proof approval pending')).toBeTruthy();
     expect(container.querySelectorAll('[data-proof-placeholder]')).toHaveLength(2);
     expect(container.querySelectorAll('[data-proof-placeholder] a')).toHaveLength(0);
-    expect(container.querySelectorAll('a[href^="https:"]')).toHaveLength(0);
-    expect(container.querySelector('[data-widget-mount]')?.getAttribute('data-widget-state')).toBe('disabled');
+    expect(container.querySelectorAll('article.draft-copy a[href^="https:"]')).toHaveLength(0);
+    if (slug !== 'ai-integration') expect(container.querySelector('[data-widget-mount]')?.getAttribute('data-widget-state')).toBe('disabled');
     expect(screen.getByRole('heading', { name: "What's included" })).toBeTruthy();
     expect(container.querySelector('a[href="/"]')).not.toBeNull();
     const ids = [...container.querySelectorAll('[id]')].map((node) => node.id);
     expect(new Set(ids).size).toBe(ids.length);
+  });
+  it('mounts the draft demo only on integration and preserves all other mounts as dormant', () => {
+    const { container: integration } = render(<App path="/ai-integration/" />);
+    expect(integration.querySelectorAll('[data-widget-mount="ai-integration"][data-widget-state="active-in-draft"]')).toHaveLength(1);
+    expect(integration.querySelectorAll('[data-widget-mount]')).toHaveLength(1);
+    expect(screen.getByRole('form', { name: 'Digital Intelligence draft demo' })).toBeTruthy();
+    cleanup();
+    for (const slug of routes.filter((route) => route !== 'ai-integration')) {
+      const { container } = render(<App path={`/${slug}/`} />);
+      expect(container.querySelectorAll('[data-widget-mount]')).toHaveLength(1);
+      expect(container.querySelector('[data-widget-mount]')?.getAttribute('data-widget-state')).toBe('disabled');
+      cleanup();
+    }
+    for (const path of ['/', '/does-not-exist/']) {
+      const { container } = render(<App path={path} />);
+      expect(container.querySelectorAll('[data-widget-mount]')).toHaveLength(0);
+      cleanup();
+    }
   });
   it('labels all prices as draft details, without finalizing scope or proof', () => {
     const html = renderToStaticMarkup(<App path="/" />);
