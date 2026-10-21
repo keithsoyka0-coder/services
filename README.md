@@ -2,6 +2,18 @@
 
 The purchasable layer of the Keith Soyka ecosystem.
 
+## Current implementation: internal draft only
+
+The React hub and six spokes render Quill's draft copy for local review. Every route is marked **DRAFT — INTERNAL REVIEW ONLY — NOT FOR PUBLICATION**. Unresolved scope and proof remain visible, consultation submission is disabled, and public release/deployment is blocked. This is accumulated progress, not a publication-ready Phase 1 handoff.
+
+```bash
+npm ci
+npm run check
+npm run preview -- --port 4174
+```
+
+Open `http://127.0.0.1:4174/` on the same computer only; do not forward the port. See the [local quickstart](docs/builder/quickstart.md), [acceptance status and remaining blockers](docs/builder/acceptance-status.md), and [implementation boundaries](docs/builder/implementation-plan.md). A branch PR is authorized; merge, deployment, Vercel project linking and database operations are not.
+
 ## The three layers
 
 | Layer | Role | Home |

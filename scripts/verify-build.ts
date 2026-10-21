@@ -1,0 +1,144 @@
+import { readFile, stat } from 'node:fs/promises';
+import path from 'node:path';
+import { pathToFileURL } from 'node:url';
+import { assertLocalPreviewPolicy } from './local-preview-policy';
+import type { PageMetadata } from '../src/metadata';
+
+// © 2026 Keith Soyka / GestaltView · provenance: services Phase 1 builder
+assertLocalPreviewPolicy(process.env);
+const root = process.cwd();
+const dist = path.join(root, 'dist');
+const serverBundle = path.join(root, 'dist-server', 'entry-server.js');
+const DRAFT_MARKER = 'DRAFT — INTERNAL REVIEW ONLY — NOT FOR PUBLICATION';
+const expectedRoutes = [
+  '/', '/website-build/', '/ai-opportunity-audit/', '/ai-ops-sprint/',
+  '/codebase-audit/', '/custom-software/', '/ai-integration/',
+];
+const failures: string[] = [];
+const bundle = await import(pathToFileURL(serverBundle).href) as { pages: PageMetadata[] };
+if (!Array.isArray(bundle.pages)) throw new Error('SSR bundle must export pages for verification.');
+const pages = bundle.pages;
+const routes = pages.map((page) => page.path);
+if (routes.length !== expectedRoutes.length || expectedRoutes.some((route) => !routes.includes(route)) || new Set(routes).size !== routes.length) {
+  failures.push(`SSR page list must contain exactly these seven routes, once each: ${expectedRoutes.join(', ')}`);
+}
+for (const page of pages) {
+  if (page.source !== 'draft-internal') failures.push(`${page.path}: source must be draft-internal.`);
+  if (!Array.isArray(page.reviewNotes) || page.reviewNotes.some((note) => typeof note !== 'string')) failures.push(`${page.path}: reviewNotes must be a string array.`);
+}
+
+function outputPath(route: string): string {
+  return route === '/' ? path.join(dist, 'index.html') : path.join(dist, route.slice(1), 'index.html');
+}
+function decode(value: string): string {
+  return value.replaceAll('&amp;', '&').replaceAll('&lt;', '<').replaceAll('&gt;', '>')
+    .replaceAll('&quot;', '"').replaceAll('&#39;', "'").replaceAll('&#x27;', "'").replaceAll('&#x2F;', '/');
+}
+function visibleText(html: string): string {
+  return decode(html.replace(/<script\b[^>]*>[\s\S]*?<\/script>/gi, ' ')
+    .replace(/<style\b[^>]*>[\s\S]*?<\/style>/gi, ' ').replace(/<[^>]*>/g, ' '))
+    .replace(/\s+/g, ' ').trim();
+}
+function innerText(html: string, tag: string): string | undefined {
+  const match = html.match(new RegExp(`<${tag}\\b[^>]*>([\\s\\S]*?)<\\/${tag}>`, 'i'));
+  return match ? visibleText(match[1]) : undefined;
+}
+function hasId(html: string, id: string): boolean {
+  return [...html.matchAll(/\b(?:id|name)\s*=\s*(["'])(.*?)\1/gi)].some((match) => decode(match[2]) === id);
+}
+function routeForPath(urlPath: string): string | undefined {
+  if (urlPath === '/') return '/';
+  const candidate = urlPath.endsWith('/') ? urlPath : `${urlPath}/`;
+  return routes.includes(candidate) ? candidate : undefined;
+}
+async function fileExists(file: string): Promise<boolean> {
+  try { await stat(file); return true; } catch { return false; }
+}
+const htmlByRoute = new Map<string, string>();
+for (const page of pages) {
+  const file = outputPath(page.path);
+  let html: string;
+  try { html = await readFile(file, 'utf8'); }
+  catch { failures.push(`Missing prerendered HTML for ${page.path}: ${file}`); continue; }
+  htmlByRoute.set(page.path, html);
+  if (innerText(html, 'title') !== page.title) failures.push(`${page.path}: title does not match page metadata.`);
+  if (!page.h1 || innerText(html, 'h1') !== page.h1) failures.push(`${page.path}: first H1 is missing or does not match page metadata.`);
+  const text = visibleText(html);
+  if (!text.includes(DRAFT_MARKER)) failures.push(`${page.path}: visible exact draft-only banner is required.`);
+  if (!/<meta\s+name=["']robots["']\s+content=["']noindex, nofollow["']/i.test(html)) failures.push(`${page.path}: must be noindex, nofollow.`);
+  if (/(?:rel=["']canonical["']|property=["']og:|application\/ld\+json|schema\.org)/i.test(html)) {
+    failures.push(`${page.path}: canonical, Open Graph, and structured metadata are prohibited in local preview.`);
+  }
+  if (/\b(?:internal handoff|license(?:[- ]key)?|degraded(?: mechanics)?|\bTODO\b)\b/i.test(html)) {
+    failures.push(`${page.path}: internal handoff, license, degraded mechanics, or TODO material is prohibited.`);
+  }
+  if (page.path !== '/') {
+    if (!text.includes('Scope approval pending')) failures.push(`${page.path}: visible Scope approval pending status is required.`);
+    if (!text.includes('Proof approval pending')) failures.push(`${page.path}: visible Proof approval pending status is required.`);
+    const mountTags = [...html.matchAll(/<([a-z][\w:-]*)\b[^>]*\bdata-widget-mount(?:\s*=\s*(["'])(.*?)\2)?[^>]*>/gi)];
+    if (mountTags.length !== 1) failures.push(`${page.path}: expected exactly one data-widget-mount; found ${mountTags.length}.`);
+    else if (!/\bdata-widget-state\s*=\s*(["'])disabled\1/i.test(mountTags[0][0])) failures.push(`${page.path}: data-widget-mount must be disabled.`);
+  }
+}
+
+for (const [route, html] of htmlByRoute) {
+  const links = [...html.matchAll(/<a\b([^>]*)\bhref\s*=\s*(["'])(.*?)\2([^>]*)>/gi)];
+  for (const match of links) {
+    const href = decode(match[3].trim());
+    if (/^(?:mailto:|tel:|javascript:|data:)/i.test(href)) continue;
+    const base = new URL(`https://local-draft.invalid${route}`);
+    let target: URL;
+    try { target = new URL(href, base); }
+    catch { failures.push(`${route}: malformed href ${href}`); continue; }
+    if (target.protocol === 'http:' || target.protocol === 'https:') {
+      if (target.origin !== base.origin) {
+        failures.push(`${route}: external clickable URLs are prohibited in this draft preview (${href}).`);
+        continue;
+      }
+      const targetRoute = routeForPath(target.pathname);
+      const targetFile = targetRoute ? outputPath(targetRoute) : path.join(dist, target.pathname.replace(/^\/+/, ''));
+      if (!await fileExists(targetFile) && !await fileExists(path.join(targetFile, 'index.html'))) {
+        failures.push(`${route}: broken local href ${href}`);
+        continue;
+      }
+      if (target.hash) {
+        const targetHtml = targetRoute ? htmlByRoute.get(targetRoute) : await readFile(
+          await fileExists(targetFile) ? targetFile : path.join(targetFile, 'index.html'), 'utf8',
+        ).catch(() => '');
+        let anchor: string;
+        try { anchor = decodeURIComponent(target.hash.slice(1)); } catch { anchor = target.hash.slice(1); }
+        if (!targetHtml || !hasId(targetHtml, anchor)) failures.push(`${route}: missing hash target ${href}`);
+      }
+    }
+  }
+}
+
+const notFoundPath = path.join(dist, '404.html');
+try {
+  const html = await readFile(notFoundPath, 'utf8');
+  const text = visibleText(html);
+  if (!/<meta\s+name=["']robots["']\s+content=["']noindex, nofollow["']/i.test(html)) failures.push('404 page must be noindex, nofollow.');
+  if (innerText(html, 'h1') !== 'Page not found') failures.push('404 page must render a Page not found H1.');
+  if (!text.includes(DRAFT_MARKER)) failures.push('404 page must visibly show the exact draft-only banner.');
+  if (/(?:rel=["']canonical["']|property=["']og:|application\/ld\+json|schema\.org)/i.test(html)) failures.push('404 page must not contain canonical, Open Graph, or structured metadata.');
+  if (/\b(?:internal handoff|license(?:[- ]key)?|degraded(?: mechanics)?|\bTODO\b)\b/i.test(html)) failures.push('404 page contains prohibited internal mechanics or TODO material.');
+} catch { failures.push('Missing generated 404.html.'); }
+
+const rootHtml = htmlByRoute.get('/');
+if (rootHtml) {
+  const form = rootHtml.match(/<form\b[^>]*>[\s\S]*?<\/form>/i)?.[0] ?? '';
+  if (!form || !/<fieldset\b[^>]*\bdisabled(?:\s|>|=)/i.test(form)) failures.push('Hub consultation form must be disabled by a disabled fieldset.');
+  if (!/Consultation unavailable in this draft preview/i.test(visibleText(form))) failures.push('Hub must identify consultation as unavailable in this draft preview.');
+  if (!/<button\b[^>]*\bdisabled(?:\s|>|=)/i.test(form)) failures.push('Hub consultation button must be disabled.');
+}
+
+const robots = await readFile(path.join(dist, 'robots.txt'), 'utf8').catch(() => '');
+if (!/Disallow:\s*\//i.test(robots)) failures.push('Draft robots.txt must disallow crawling.');
+if (await fileExists(path.join(dist, 'sitemap.xml'))) failures.push('Draft output must not contain sitemap.xml.');
+
+if (failures.length) {
+  console.error(`Build verification failed (${failures.length} issue${failures.length === 1 ? '' : 's'}):\n- ${failures.join('\n- ')}`);
+  process.exitCode = 1;
+} else {
+  console.log(`Build verification passed: ${pages.length} internal-review routes, a noindex 404, and no public SEO output.`);
+}
