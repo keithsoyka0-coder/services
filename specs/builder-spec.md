@@ -34,7 +34,7 @@ A standalone services site — the purchasable layer of the ecosystem — in a n
 
 ## 4. Phases
 
-**Phase 1 — site.** Hub + 6 spokes, fully SEO-scaffolded (§6), care-package content rendered, contact/consultation path working, sitemap + robots correct. **Widget-ready:** each spoke ships with a defined mount point for the DI widget (placement + container contract), but no live widget yet.
+**Phase 1 — site.** Hub + 6 spokes, fully SEO-scaffolded (§6), care-package content rendered, contact/consultation path working, sitemap + robots correct. **Stack: React** (Keith's decision 2026-10-20) — not a static site: the DI widget (Phase 2) and consultation write path require live API calls, and React offers the most comprehensive abilities for multi-dimensional interactive interfaces. **Widget-ready:** each spoke ships with a defined mount point for the DI widget (placement + container contract), but no live widget yet.
 
 **Phase 2 — embedded DI, layer one (public demo).** Scoped widget on the AI spokes + "ask about this service" assistant on the website-build spoke, powered by the live Railway runtime API. Domain-scoped, rate-limited, labeled as a live demo. (Design constraints in the attested plan's "Interactive proof" section.)
 
