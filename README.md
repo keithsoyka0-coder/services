@@ -4,7 +4,7 @@ The purchasable layer of the Keith Soyka ecosystem.
 
 ## Current implementation: internal draft only
 
-The React hub and six spokes render Quill's draft copy for review. Every route is marked **DRAFT — INTERNAL REVIEW ONLY — NOT FOR PUBLICATION**. Unresolved scope and proof remain visible, consultation submission is disabled, and public-release flags remain blocked. Keith can deliberately build and host this draft on Vercel after setting up the project himself; hosting does not approve the copy for publication. This is accumulated progress, not a publication-ready Phase 1 handoff.
+The React hub and six spokes render Quill's draft copy for review. Every route is marked **DRAFT — INTERNAL REVIEW ONLY — NOT FOR PUBLICATION** and remains noindex. Scope/proof notices and disabled consultation remain. Only `/ai-integration/` renders a disclosed DI demo form backed by a same-origin signed proxy; its API is disabled by default. This slice does not change offers, prices, proof, fictional-sample labels or the hub hero/visual system. Hosting does not approve the copy for publication.
 
 ```bash
 npm ci
@@ -12,7 +12,11 @@ npm run check
 npm run preview -- --port 4174
 ```
 
-Open `http://127.0.0.1:4174/` on the same computer only; do not forward the port. See the [draft quickstart](docs/builder/quickstart.md), [acceptance status and remaining blockers](docs/builder/acceptance-status.md), and [original implementation boundaries](docs/builder/implementation-plan.md). Vercel uses `npm run build && npm run verify:build` with output `dist`; leave `SITE_ORIGIN` empty and do not enable `PUBLIC_RELEASE` or `CONTENT_APPROVED`. This change does not authorize an agent to merge, deploy, create/link a Vercel project, or perform database operations.
+Open `http://127.0.0.1:4174/` on the same computer. See the [draft quickstart](docs/builder/quickstart.md), [acceptance status](docs/builder/acceptance-status.md), and [build contract](docs/builder/seo-build-contract.md). Vercel uses only `npm run build`, output `dist`. `npm run verify:build` is local-only, included in `npm run check`; no release/origin variable gates a build or enables SEO. No demo settings are needed to build. Server-only configuration names with blank values are in `.env.example`.
+
+Offline browser checks: `npx playwright install chromium`, then `npm run test:e2e`. Vite does not run Vercel Functions; browser tests intercept the same-origin endpoint with synthetic responses and block external traffic. Proxy tests inject transport, never call Runtime/Groq. Services does not persist visitor messages or answers. See the quickstart for a preinstalled Chromium option.
+
+Runtime PR #46 is merged; hosted migration/RPC and Runtime/Services configuration, Services-edge WAF and separate explicit enablement remain owner-controlled activation requirements, not deployment gates. Keith approved the automatic Services preview from pushing/opening this PR only. No manual deployment, merge, production release, publication, indexing, live migration, secrets/WAF setup or consultation enablement is authorized. No Services database, Runtime or Netlify change is included.
 
 ## The three layers
 
@@ -69,8 +73,8 @@ Open `http://127.0.0.1:4174/` on the same computer only; do not forward the port
 - PRs only. Nothing merges without Keith's "ship it."
 - Prices match the approved offering spec byte-for-byte. Never invent testimonials, client names, or statistics.
 - Skills and superpowers come from the GestaltView repo's `.agents/skills/` (`manifest.json` is source of truth).
-- Stack: React — not a static site. Live API calls (DI widget, consultation path), and the most comprehensive footing for multi-dimensional interactive UI.
-- Verification before done: typecheck + build green, every link resolves, sitemap current, no secrets in the repo.
+- Stack: React with prerendered draft HTML. DI demo admission is separately controlled; consultation remains unavailable.
+- Verification before done: typecheck, focused/full tests, build, local verifier, offline browser checks and diff whitespace; no sitemap or secrets in draft output.
 
 ## Team lanes
 

@@ -1,11 +1,9 @@
 import { access, mkdir, readFile, rm, writeFile } from 'node:fs/promises';
 import path from 'node:path';
 import { pathToFileURL } from 'node:url';
-import { assertLocalPreviewPolicy } from './local-preview-policy';
 import type { PageMetadata } from '../src/metadata';
 
 // © 2026 Keith Soyka / GestaltView · provenance: services Phase 1 builder
-assertLocalPreviewPolicy(process.env);
 
 const routes = [
   '/',

@@ -1,11 +1,10 @@
-import { readFile, stat } from 'node:fs/promises';
+import { readFile, readdir, stat } from 'node:fs/promises';
 import path from 'node:path';
 import { pathToFileURL } from 'node:url';
-import { assertLocalPreviewPolicy } from './local-preview-policy';
+import { isApprovedExternalLink } from './build-link-policy';
 import type { PageMetadata } from '../src/metadata';
 
 // © 2026 Keith Soyka / GestaltView · provenance: services Phase 1 builder
-assertLocalPreviewPolicy(process.env);
 const root = process.cwd();
 const dist = path.join(root, 'dist');
 const serverBundle = path.join(root, 'dist-server', 'entry-server.js');
@@ -77,7 +76,36 @@ for (const page of pages) {
     if (!text.includes('Proof approval pending')) failures.push(`${page.path}: visible Proof approval pending status is required.`);
     const mountTags = [...html.matchAll(/<([a-z][\w:-]*)\b[^>]*\bdata-widget-mount(?:\s*=\s*(["'])(.*?)\2)?[^>]*>/gi)];
     if (mountTags.length !== 1) failures.push(`${page.path}: expected exactly one data-widget-mount; found ${mountTags.length}.`);
-    else if (!/\bdata-widget-state\s*=\s*(["'])disabled\1/i.test(mountTags[0][0])) failures.push(`${page.path}: data-widget-mount must be disabled.`);
+    else {
+      const state = page.path === '/ai-integration/' ? 'active-in-draft' : 'disabled';
+      if (!new RegExp(`\\bdata-widget-state\\s*=\\s*(["'])${state}\\1`, 'i').test(mountTags[0][0])) {
+        failures.push(`${page.path}: data-widget-mount must be ${state}.`);
+      }
+    }
+  } else if (/\bdata-widget-mount\b/i.test(html)) {
+    failures.push('Hub must not contain a widget mount.');
+  }
+  if (page.path === '/ai-integration/') {
+    const disclosureTerms = [
+      /Groq/, /canonical profile/i, /private[- ]interior/i, /memories/i,
+      /founder notes/i, /relationships/i, /wound[- ]layer material/i,
+      /values/i, /preferences/i, /skills/i, /sensitive information/i,
+      /not retained by default/i, /reliability/i, /suspected[- ]abuse/i,
+      /30 days/i, /legal/i, /pseudonymous/i, /keyed digests/i,
+      /(?:shared[- ]network|shared[- ]IP|sharing an IP|same IP\/network share)/i,
+      /\b(?:5|five)\b/, /\b(?:50|fifty)\b/, /UTC hour/i, /UTC day/i,
+      /client result/i, /unavailable/i, /migration/i, /WAF/i, /enablement/i,
+    ];
+    const disclosureMarkup = html.match(/<div\b[^>]*\bclass=["'][^"']*\bdi-demo-disclosure\b[^"']*["'][^>]*>[\s\S]*?<\/div>/i)?.[0] ?? '';
+    const disclosureText = visibleText(disclosureMarkup);
+    if (disclosureTerms.some(term => !term.test(disclosureText))) failures.push('Integration disclosure is incomplete.');
+    if (!html.includes('href="https://console.groq.com/docs/your-data"')) failures.push('Integration disclosure must link the exact approved Groq data URL.');
+    const expectedProfiles = ['the-weaver', 'the-tailor', 'cascade-engineer', 'the-algorithm'];
+    const select = html.match(/<select\b[^>]*>[\s\S]*?<\/select>/i)?.[0] ?? '';
+    const profiles = [...select.matchAll(/<option\b[^>]*(?:\s)value=(["'])(.*?)\1/gi)].map(match => match[2]).filter(Boolean);
+    if (profiles.length !== expectedProfiles.length || expectedProfiles.some(slug => profiles.filter(value => value === slug).length !== 1)) {
+      failures.push('Integration selector must contain exactly the four approved profiles.');
+    }
   }
 }
 
@@ -92,7 +120,7 @@ for (const [route, html] of htmlByRoute) {
     catch { failures.push(`${route}: malformed href ${href}`); continue; }
     if (target.protocol === 'http:' || target.protocol === 'https:') {
       if (target.origin !== base.origin) {
-        failures.push(`${route}: external clickable URLs are prohibited in this draft preview (${href}).`);
+        if (!isApprovedExternalLink(href)) failures.push(`${route}: unapproved external clickable URL (${href}).`);
         continue;
       }
       const targetRoute = routeForPath(target.pathname);
@@ -122,6 +150,7 @@ try {
   if (!text.includes(DRAFT_MARKER)) failures.push('404 page must visibly show the exact draft-only banner.');
   if (/(?:rel=["']canonical["']|property=["']og:|application\/ld\+json|schema\.org)/i.test(html)) failures.push('404 page must not contain canonical, Open Graph, or structured metadata.');
   if (/\b(?:internal handoff|license(?:[- ]key)?|degraded(?: mechanics)?|\bTODO\b)\b/i.test(html)) failures.push('404 page contains prohibited internal mechanics or TODO material.');
+  if (/\bdata-widget-mount\b/i.test(html)) failures.push('404 page must not contain a widget mount.');
 } catch { failures.push('Missing generated 404.html.'); }
 
 const rootHtml = htmlByRoute.get('/');
@@ -135,6 +164,36 @@ if (rootHtml) {
 const robots = await readFile(path.join(dist, 'robots.txt'), 'utf8').catch(() => '');
 if (!/Disallow:\s*\//i.test(robots)) failures.push('Draft robots.txt must disallow crawling.');
 if (await fileExists(path.join(dist, 'sitemap.xml'))) failures.push('Draft output must not contain sitemap.xml.');
+
+async function outputFiles(directory: string): Promise<string[]> {
+  const entries = await readdir(directory, { withFileTypes: true });
+  const groups = await Promise.all(entries.map(entry => {
+    const file = path.join(directory, entry.name);
+    return entry.isDirectory() ? outputFiles(file) : Promise.resolve([file]);
+  }));
+  return groups.flat();
+}
+const files = await outputFiles(dist);
+const expectedHtml = new Set([...pages.map(page => outputPath(page.path)), notFoundPath]);
+for (const file of files.filter(file => /\.html$/i.test(file))) {
+  if (!expectedHtml.has(file)) failures.push('Unexpected generated HTML route.');
+}
+const serverNames = [
+  'GESTALTVIEW_RUNTIME_API_BASE', 'DI_DEMO_SERVICE_SIGNING_SECRET',
+  'DI_DEMO_VISITOR_HMAC_SECRET', 'DI_DEMO_ENABLED', 'DI_DEMO_REPLAY_HMAC_SECRET',
+  'DI_DEMO_SERVICE_SIGNING_KEYS_JSON', 'GROQ_API_KEY', 'SUPABASE_SERVICE_ROLE_KEY',
+];
+const configuredValues = serverNames
+  .filter(name => name !== 'DI_DEMO_ENABLED')
+  .map(name => process.env[name])
+  .filter((value): value is string => Boolean(value));
+for (const file of files.filter(file => /\.(?:html|js|mjs|css|json|map|txt)$/i.test(file))) {
+  const contents = await readFile(file, 'utf8');
+  if (serverNames.some(name => contents.includes(name)) || configuredValues.some(value => contents.includes(value))) {
+    // Do not print names, values, payloads, or file contents when reporting a leak.
+    failures.push('Browser output contains server-only configuration.');
+  }
+}
 
 if (failures.length) {
   console.error(`Build verification failed (${failures.length} issue${failures.length === 1 ? '' : 's'}):\n- ${failures.join('\n- ')}`);

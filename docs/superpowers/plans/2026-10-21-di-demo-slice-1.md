@@ -1,0 +1,24 @@
+# Services DI demo — runnable slice 1
+
+Base: `066ce506b84b1843a62873b9cfd612065e9208f7` (`origin/main`). Branch: `feature/services-di-demo-slice-1`. Approved design: Services design at commit `197848d`, `docs/superpowers/specs/2026-10-21-public-di-demo-design.md`; approved full plan remains read-only in `/workspace/services-demo-review/docs/superpowers/plans/2026-10-21-public-di-demo-services.md`. This narrower plan follows current founder directive §5. Runtime PR #46 is merged per owner; Runtime and Netlify remain untouched.
+
+## This independently runnable slice
+
+1. Establish offline browser regression RED before implementation (`playwright.config.ts`, `tests/e2e/di-demo.spec.ts`, minimal `package.json`/lock test dependency). No missing-import failure counts as behavioral RED.
+2. Test-first Services boundary (`tests/di-demo-proxy.test.ts`, `api/di-demo.ts`, `api/_lib/di-demo-proxy.ts`): disabled by default; strict POST/JSON/8 KiB/1,200-code-point/four-slug input; trusted Vercel IP only; separate keyed visitor digest; exact fixed Runtime origin/path/audience and v1 signature; random matching request ID; one bounded no-redirect upstream call; minimal no-store generic response. Synthetic transport only. No persistence/logging/retry.
+3. Test-first accessible UI (`tests/di-demo-ui.test.tsx`, `tests/app.test.tsx`, `src/DiDemo.tsx`, `src/App.tsx`; one scoped `.di-demo-answer` wrapping rule in `src/styles.css`, backed by mobile browser RED/GREEN): only `/ai-integration/` renders active-in-draft form. Preserve hub copy/visuals, other dormant spokes, disabled consultation, offer details and fictional-sample boundaries. Full approved pre-submit disclosure, exact Groq policy link, four slugs, transient loading/answer/generic error/quota states, same-origin only, no storage or automatic calls. Live calls remain unavailable pending separate activation.
+4. Test-first minimal runnable build/verifier changes (`tests/draft-safety.test.ts`, `tests/build-link-policy.test.ts`, `tests/build-verifier.test.ts`, `tests/draft-content.test.ts`, `scripts/build-link-policy.ts`, `scripts/local-preview-policy.ts`, `scripts/prerender.ts`, `scripts/verify-build.ts`, `vite.config.ts`, `package.json`, `vercel.json`): remove all release/origin policy gates and policy hooks; keep loopback serving, draft generation and all security/noindex safeguards. Vercel command is only `npm run build`; verifier remains local via `check`. Allow only exact Groq disclosure URL; verify seven routes, one active-in-draft demo and five dormant mounts, disclosure and no server configuration in browser assets. Disposable output-fixture tests exercise the real verifier, including negative mutations, without a deployment.
+5. Update only operator docs (`.env.example`, `README.md`, `docs/builder/{quickstart,acceptance-status,seo-build-contract,widget-container-contract}.md`) to match this slice, build/activation distinction and offline evidence. Variables documented by name only, blank values. No claims of deployment or live integration.
+6. Verify independently: typecheck; focused tests; full tests; build even with release/origin variables present; local verifier; offline browser tests; diff whitespace and scope review. Record actual RED/GREEN and final evidence under `docs/builder/di-demo-slice-1-evidence.md`.
+
+## Contract preserved, not reimplemented here
+
+Exactly `the-weaver`, `the-tailor`, `cascade-engineer`, `the-algorithm`. Runtime owns serialization of all canonical profile fields except `memorySystem.privateInterior`, Groq `openai/gpt-oss-20b` (one attempt), atomic fixed UTC quotas (5/visitor/hour; 50/global/day), replay protection and cleanup. Services signs `{profileSlug,message,visitorDigest,requestId}` to `https://gestaltview-ai-v3.vercel.app/api/di-demo`; no live request is authorized. Services-edge WAF (source IP, POST `/api/di-demo`, 10/10 minutes, default 429) is required before separate enablement, not a build gate. Runtime configuration and reviewed migration/RPC are activation requirements. No config, secrets, migration or WAF actions here.
+
+## Next independent PR — explicitly not this slice
+
+Hub exact approved B hero/lede and sitewide gradient/canvas/liquid-glass refresh (`src/App.tsx`, `src/AtmosphereCanvas.tsx`, `src/styles.css`, focused visual tests). No hero/canvas/visual refresh in slice 1. Shopify shelf and Netlify are separate lanes.
+
+## External-action boundary
+
+Owner update at 17:26 EDT explicitly approves the automatic Services preview resulting from pushing/opening this PR. Work/test/commit locally, then push/open this slice PR and report its automatic preview status. No manual deployment, merge, production deployment/release, publication, indexing, Vercel settings changes, secrets/WAF configuration or live database actions are authorized. Runtime-only approval was not reused. Existing `/workspace/services-demo-review` files/untracked material stay untouched.
