@@ -26,3 +26,14 @@ The current hero reads desperate — funny, but it has to go. The hero sells con
 - Confidence comes from clarity: bounded scopes, transparent prices, stated exclusions. A provider who tells you exactly what you get — and what you don't — doesn't need to beg.
 - The non-predatory fit standard is the anti-desperation: "we'll tell you if we're not the fit." Desperate providers never say that.
 - Quill: rewrite the hero in his voice — warm, direct, specific. No superlatives about himself, no urgency tricks, no "hire me" energy. Show the work; let the proof do the asking.
+
+## 4. Ground the team in his actual words — read-only corpus (2026-10-21 ~00:36 EDT)
+
+The desperate hero happened because ungrounded agents invent. The fix:
+
+- Before writing copy about Keith or GestaltView (Quill) or making claims in code and docs (Builder), **deep-dive these two repos for historical context** — read-only:
+  - `keithsoyka0-coder/gestaltview` (the runtime)
+  - `keithsoyka0-coder/GestaltView_Corpus_-_Knowledge_Repository` (the corpus)
+- The standard is the memory-suite standard: **clear separation between things he actually said and machine-generated content.** Agent memories of who he is, what GestaltView is and why, and the journey of making it get built from the read-only corpus — his words, attested — never invented, never filled from plausible assumptions. Ask, don't fill.
+- Until the agent-memory injection (corpus → agent memories) lands, an indexed repository is the interim source of truth. Treat the corpus as read-only: no agent writes to it, ever.
+- Ungrounded agents invent heroes that beg. Grounded agents quote.
