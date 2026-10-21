@@ -38,6 +38,10 @@ The purchasable layer of the Keith Soyka ecosystem.
 
 - `integrations/portfolio-canonical-swap.md` — Builder brief: portfolio canonical domain swap (fold-in for the portfolio repo)
 
+## Records
+
+- `records/lane-drafts-internal-planning-approval_2026-10-20.md` — approval record: Keith approved the Quill, DB & Schema, and SEO lane drafts for **internal planning only** (2026-10-20 21:55 EDT). Not publication, deployment, or database writes.
+
 ## SEO
 
 - `seo/seo-plan-and-page-matrix.md` — SEO lane draft: seven-page intent matrix, canonical/OG contract, structured data, proof briefs, robots/sitemap rules (for Builder + Quill, not published copy)
