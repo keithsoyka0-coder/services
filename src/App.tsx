@@ -1,6 +1,7 @@
 // © 2026 Keith Soyka / GestaltView · provenance: services local draft preview builder
 import { getPage, services, type PageContent } from './content';
 import { DiDemo } from './DiDemo';
+import { AtmosphereCanvas } from './AtmosphereCanvas';
 
 const DRAFT_MARKER = 'DRAFT — INTERNAL REVIEW ONLY — NOT FOR PUBLICATION';
 
@@ -45,10 +46,10 @@ function DormantWidget({ page }: { page: PageContent }) {
 export function App({ path }: { path: string }) {
   const page = getPage(path);
   const hub = page?.path === '/';
-  return <><a className="skip-link" href="#main-content">Skip to content</a><Header />
+  return <><AtmosphereCanvas /><a className="skip-link" href="#main-content">Skip to content</a><Header />
     <div className="draft-banner" role="note">{DRAFT_MARKER}</div>
     <main className="wrap" id="main-content">
-      <section className="hero">{!hub && <a className="back-link" href="/">← All service drafts</a>}<p className="eyebrow">{page ? 'Quill copy · local draft review' : '404 · route not found'}</p><h1>{page?.h1 ?? 'Page not found'}</h1><p className="lede">{page ? 'Local draft for review; not a final offer or a live purchasing path.' : 'This address is not one of the seven service drafts.'}</p>{page && <a className="btn btn-ghost" href="#review-status">Review unresolved decisions <span aria-hidden="true">↗</span></a>}</section>
+      <section className="hero">{!hub && <a className="back-link" href="/">← All service drafts</a>}<p className="eyebrow">{page ? 'Quill copy · local draft review' : '404 · route not found'}</p><h1>{page?.h1 ?? 'Page not found'}</h1><p className="lede">{hub ? 'Explore web builds, audits, custom software, and Digital Intelligence (DI) integration through written scopes, sample deliverables, and my own Portfolio and GestaltView work. Fictional samples are labeled separately. These are ways to inspect my approach—not client results.' : page ? 'Local draft for review; not a final offer or a live purchasing path.' : 'This address is not one of the seven service drafts.'}</p>{page && <a className="btn btn-ghost" href="#review-status">Review unresolved decisions <span aria-hidden="true">↗</span></a>}</section>
       {page ? <><ReviewStatus page={page} /><article className="draft-copy" aria-label="Quill page draft" dangerouslySetInnerHTML={{ __html: page.bodyHtml }} />{hub ? <Consultation /> : page.path === '/ai-integration/' ? <DiDemo /> : <DormantWidget page={page} />}</> : <a className="btn btn-primary" href="/">Back to service drafts</a>}
     </main><footer className="site-footer"><div className="wrap footer-inner"><p>© 2026 Keith Soyka / GestaltView</p><p>Local draft preview · no live consultation or DI widget</p><a href="/">Services home</a></div></footer>
   </>;
