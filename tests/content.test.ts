@@ -3,7 +3,7 @@ import { describe, expect, it } from 'vitest';
 import { getPage, pages, serviceCards, services } from '../src/content';
 
 const routes = ['/', '/website-build/', '/ai-opportunity-audit/', '/ai-ops-sprint/', '/codebase-audit/', '/custom-software/', '/ai-integration/'];
-const h1s = ['Hire Keith Soyka for web builds, audits, and Digital Intelligence (DI) integration', 'Standard 4-page site', 'DI opportunity audit', 'AI Ops Sprint, two weeks', 'Codebase / website audit + refresh', 'Custom software (small tool, fixed scope)', 'DI integration (SMB, fixed scope)'];
+const h1s = ['Look at the work. See how it’s put together.', 'Standard 4-page site', 'DI opportunity audit', 'AI Ops Sprint, two weeks', 'Codebase / website audit + refresh', 'Custom software (small tool, fixed scope)', 'DI integration (SMB, fixed scope)'];
 describe('locally rendered draft content', () => {
   it('exposes exactly seven routes sourced from internal drafts', () => {
     expect(pages.map((page) => page.path)).toEqual(routes);

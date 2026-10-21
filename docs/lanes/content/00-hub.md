@@ -16,7 +16,7 @@ SEO intent follows `../seo/seo-plan-matrix.md`. These are editorial proposals, n
 
 ## Public copy
 
-# Hire Keith Soyka for web builds, audits, and Digital Intelligence (DI) integration
+# Look at the work. See how it’s put together.
 
 Start with what your business needs—not a bigger build than you can use. Choose a defined service, understand its boundaries, and leave with a deliverable you can work with.
 

@@ -1,5 +1,5 @@
 // © 2026 Keith Soyka / GestaltView · provenance: local draft preview builder
-import { afterEach, describe, expect, it, vi } from 'vitest';
+import { afterEach, beforeEach, describe, expect, it, vi } from 'vitest';
 import { cleanup, fireEvent, render, screen, waitFor } from '@testing-library/react';
 import { renderToStaticMarkup } from 'react-dom/server';
 import { App } from '../src/App';
@@ -7,6 +7,9 @@ import { App } from '../src/App';
 afterEach(() => {
   cleanup();
   vi.restoreAllMocks();
+});
+beforeEach(() => {
+  vi.spyOn(HTMLCanvasElement.prototype, 'getContext').mockReturnValue(null);
 });
 
 const path = '/ai-integration/';
@@ -105,8 +108,8 @@ describe('draft Digital Intelligence demo UI', () => {
     await waitFor(() => expect(screen.getByText('Done.')).toBeTruthy());
   });
 
-  it('blocks empty and over-1200-code-point messages without networking', () => {
-    const fetchSpy = vi.spyOn(globalThis, 'fetch');
+  it('keeps empty messages local and clamps over-limit Unicode before one request', async () => {
+    const fetchSpy = vi.spyOn(globalThis, 'fetch').mockResolvedValue(okResponse('Bounded answer'));
     render(<App path={path} />);
     fireEvent.change(screen.getByRole('combobox', { name: /profile/i }), { target: { value: 'the-weaver' } });
     fireEvent.click(screen.getByRole('button', { name: /send|submit/i }));
@@ -115,8 +118,10 @@ describe('draft Digital Intelligence demo UI', () => {
     const message = screen.getByRole('textbox', { name: /message/i });
     fireEvent.change(message, { target: { value: '😀'.repeat(1201) } });
     fireEvent.click(screen.getByRole('button', { name: /send|submit/i }));
-    expect(fetchSpy).not.toHaveBeenCalled();
-    expect(screen.getByRole('status').textContent).toMatch(/1,200/i);
+    await waitFor(() => expect(fetchSpy).toHaveBeenCalledTimes(1));
+    const request = JSON.parse(String(fetchSpy.mock.calls[0]?.[1]?.body)) as { message: string };
+    expect(Array.from(request.message)).toHaveLength(1200);
+    await waitFor(() => expect(screen.getByRole('status').textContent).toBe('Answer ready.'));
   });
 
   it('shows a bounded-limit message for 429 without echoing response data and resets transient form state', async () => {

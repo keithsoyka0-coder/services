@@ -1,12 +1,16 @@
 // © 2026 Keith Soyka / GestaltView · provenance: local draft preview builder
-import { afterEach, describe, expect, it, vi } from 'vitest';
+import { afterEach, beforeEach, describe, expect, it, vi } from 'vitest';
 import { cleanup, fireEvent, render, screen } from '@testing-library/react';
 import { renderToStaticMarkup } from 'react-dom/server';
 import { App } from '../src/App';
+import { getPage } from '../src/content';
 
 const marker = 'DRAFT — INTERNAL REVIEW ONLY — NOT FOR PUBLICATION';
 const routes = ['website-build', 'ai-opportunity-audit', 'ai-ops-sprint', 'codebase-audit', 'custom-software', 'ai-integration'];
 afterEach(cleanup);
+beforeEach(() => {
+  vi.spyOn(HTMLCanvasElement.prototype, 'getContext').mockReturnValue(null);
+});
 
 describe('authorized local-only Quill draft preview', () => {
   it.each(['/', ...routes.map((slug) => `/${slug}/`), '/does-not-exist/'])('conspicuously labels %s as internal-only', (path) => {
@@ -15,13 +19,24 @@ describe('authorized local-only Quill draft preview', () => {
     expect(screen.getAllByRole('heading', { level: 1 })).toHaveLength(1);
   });
   it('renders the Quill hub prose and links to all six exact spoke routes', () => {
+    expect(getPage('/')?.h1).toBe('Look at the work. See how it’s put together.');
     const { container } = render(<App path="/" />);
-    expect(screen.getByRole('heading', { level: 1 }).textContent).toBe('Hire Keith Soyka for web builds, audits, and Digital Intelligence (DI) integration');
+    expect(screen.getByRole('heading', { level: 1 }).textContent).toBe('Look at the work. See how it’s put together.');
+    expect(container.querySelector('.hero .lede')?.textContent).toBe('Explore web builds, audits, custom software, and Digital Intelligence (DI) integration through written scopes, sample deliverables, and my own Portfolio and GestaltView work. Fictional samples are labeled separately. These are ways to inspect my approach—not client results.');
     expect(screen.getByRole('heading', { name: 'Care is part of the build—not an upgrade' })).toBeTruthy();
     for (const slug of routes) expect(container.querySelector(`a[href="/${slug}/"]`)).not.toBeNull();
     expect(container.querySelector('#consultation')).not.toBeNull();
     expect(container.querySelector('#discovery')).not.toBeNull();
     expect(container.querySelector('#review-status')).not.toBeNull();
+  });
+  it('renders one decorative atmosphere on every route while keeping initial HTML text', () => {
+    for (const path of ['/', ...routes.map((slug) => `/${slug}/`), '/does-not-exist/']) {
+      const html = renderToStaticMarkup(<App path={path} />);
+      expect(html.match(/<canvas\b/g)?.length ?? 0).toBe(1);
+      expect(html).toContain('aria-hidden="true"');
+      expect(html).toContain(marker);
+      expect(html).toContain('<h1>');
+    }
   });
   it.each(routes)('renders %s draft prose with visible unresolved proof and scope', (slug) => {
     const { container } = render(<App path={`/${slug}/`} />);
