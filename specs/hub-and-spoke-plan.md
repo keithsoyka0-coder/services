@@ -73,7 +73,7 @@ The sales logic, in his framing: *"Well, what am I buying? Well — what are you
 ## Build notes (for Builder)
 
 - Repo: `keithsoyka0-coder/Portfolio`, PR for Keith's review, never direct to main.
-- 6 new pages + 1 hub. Static-friendly; follow the existing portfolio patterns.
+- 6 new pages + 1 hub. **React** (Keith's decision 2026-10-20 — "changey change"): not a static site. The DI widget and consultation path make live API calls, and React offers the most comprehensive abilities for multi-dimensional interactive interfaces. Follow the existing portfolio theme and styling.
 - Update the sitemap after merge (the 56-page sitemap from Oct 20 predates this).
 - The Oct 19 staleness sweep found wrong prices on the homepage ("from $2,500" audit / "from $5,000" build) — the spoke pages are the fix: locked prices live here, homepage points here.
 - Do not invent testimonials, client names, or outcome statistics. None exist in approved form.
