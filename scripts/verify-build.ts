@@ -93,10 +93,12 @@ for (const page of pages) {
       /not retained by default/i, /reliability/i, /suspected[- ]abuse/i,
       /30 days/i, /legal/i, /pseudonymous/i, /keyed digests/i,
       /(?:shared[- ]network|shared[- ]IP|sharing an IP|same IP\/network share)/i,
-      /(?:5|five)/i, /(?:50|fifty)/i, /UTC hour/i, /UTC day/i,
+      /\b(?:5|five)\b/, /\b(?:50|fifty)\b/, /UTC hour/i, /UTC day/i,
       /client result/i, /unavailable/i, /migration/i, /WAF/i, /enablement/i,
     ];
-    if (disclosureTerms.some(term => !term.test(text))) failures.push('Integration disclosure is incomplete.');
+    const disclosureMarkup = html.match(/<div\b[^>]*\bclass=["'][^"']*\bdi-demo-disclosure\b[^"']*["'][^>]*>[\s\S]*?<\/div>/i)?.[0] ?? '';
+    const disclosureText = visibleText(disclosureMarkup);
+    if (disclosureTerms.some(term => !term.test(disclosureText))) failures.push('Integration disclosure is incomplete.');
     if (!html.includes('href="https://console.groq.com/docs/your-data"')) failures.push('Integration disclosure must link the exact approved Groq data URL.');
     const expectedProfiles = ['the-weaver', 'the-tailor', 'cascade-engineer', 'the-algorithm'];
     const select = html.match(/<select\b[^>]*>[\s\S]*?<\/select>/i)?.[0] ?? '';
