@@ -181,7 +181,10 @@ const serverNames = [
   'DI_DEMO_VISITOR_HMAC_SECRET', 'DI_DEMO_ENABLED', 'DI_DEMO_REPLAY_HMAC_SECRET',
   'DI_DEMO_SERVICE_SIGNING_KEYS_JSON', 'GROQ_API_KEY', 'SUPABASE_SERVICE_ROLE_KEY',
 ];
-const configuredValues = serverNames.map(name => process.env[name]).filter((value): value is string => Boolean(value));
+const configuredValues = serverNames
+  .filter(name => name !== 'DI_DEMO_ENABLED')
+  .map(name => process.env[name])
+  .filter((value): value is string => Boolean(value));
 for (const file of files.filter(file => /\.(?:html|js|mjs|css|json|map|txt)$/i.test(file))) {
   const contents = await readFile(file, 'utf8');
   if (serverNames.some(name => contents.includes(name)) || configuredValues.some(value => contents.includes(value))) {
