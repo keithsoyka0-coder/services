@@ -28,7 +28,20 @@ describe('locally rendered draft content', () => {
       expect(page.bodyHtml).not.toContain('Internal handoff');
     }
     expect(pages[0].bodyHtml).toContain('Start with what your business needs');
-    expect(serviceCards).toEqual([]);
+    expect(serviceCards).toHaveLength(6);
+    expect(serviceCards.map(({ id, path, name, price }) => [id, path, name, price])).toEqual([
+      ['website-build', '/website-build/', 'Standard 4-page site', '$2,900'],
+      ['ai-opportunity-audit', '/ai-opportunity-audit/', 'DI opportunity audit', '$950'],
+      ['ai-ops-sprint', '/ai-ops-sprint/', 'AI Ops Sprint, two weeks', '$2,500'],
+      ['codebase-audit', '/codebase-audit/', 'Codebase / website audit + refresh', 'scoped'],
+      ['custom-software', '/custom-software/', 'Custom software (small tool, fixed scope)', '$8,500–$10,000'],
+      ['ai-integration', '/ai-integration/', 'DI integration (SMB, fixed scope)', '$9,500'],
+    ]);
+    expect(pages[0]).toHaveProperty('hubPresentation');
+    expect(pages[0].hubPresentation?.cards).toEqual(serviceCards);
+    expect(pages[0].hubPresentation?.beforeHtml).toContain('Find the right starting point');
+    expect(pages[0].hubPresentation?.afterHtml).toContain('Care is part of the build—not an upgrade');
+    expect(pages.slice(1).every((page) => !page.hubPresentation)).toBe(true);
   });
 
   it('keeps proof placeholders non-clickable and provides hub anchor IDs', () => {
@@ -45,5 +58,20 @@ describe('locally rendered draft content', () => {
     expect(serialized).not.toMatch(/Internal handoff|planning-only approval|license.key|degraded.mode/i);
     expect(serialized).not.toContain('gestaltview-ai-v3.vercel.app');
     expect(serialized).toContain('UNVERIFIED EXTERNAL REFERENCE');
+  });
+
+  it('retains exact source labels and both safe inline and plain display representations', () => {
+    expect(serviceCards[0]).toMatchObject({
+      headingId: 'standard-4-page-site',
+      outcome: 'A from-scratch site that explains what you offer and gives people a way to contact you.',
+      included: 'Included: landing, contact, about, and terms/privacy; implementation and design specifications; documented page purposes and connections; build documentation and tested handoff.',
+      excluded: 'Not included: DI integration. Logo / branding and ongoing maintenance are separately scoped add-ons. Hosting options are compared separately.',
+      scopeLinkLabel: 'See the website-build scope',
+      nameHtml: 'Standard 4-page site',
+    });
+    expect(serviceCards[0]?.includedHtml).toContain('<strong>Included:</strong>');
+    expect(serviceCards[0]?.excludedHtml).toContain('<strong>Not included:</strong>');
+    expect(serviceCards[0]?.scopeLinkLabelHtml).toBe('See the website-build scope');
+    expect(serviceCards[0]?.price).toBe('$2,900');
   });
 });
