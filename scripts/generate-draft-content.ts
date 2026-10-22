@@ -3,6 +3,7 @@ import { mkdir, readFile, writeFile } from 'node:fs/promises';
 import path from 'node:path';
 import { fileURLToPath } from 'node:url';
 import { marked, Renderer, type Tokens } from 'marked';
+import type { HubPresentation, ServiceCard } from '../src/service-card-types';
 
 export interface GeneratedPage {
   path: string;
@@ -12,6 +13,7 @@ export interface GeneratedPage {
   price: string | null;
   summary: string;
   bodyHtml: string;
+  hubPresentation?: HubPresentation;
   faq: { question: string; answer: string }[];
   source: 'draft-internal';
   reviewNotes: string[];
@@ -79,7 +81,13 @@ const plainText = (html: string) => decodeEntities(html.replace(/<[^>]*>/g, ''))
 const slugify = (text: string) => plainText(text).toLowerCase()
   .normalize('NFKD').replace(/[\u0300-\u036f]/g, '').replace(/[^a-z0-9]+/g, '-').replace(/^-|-$/g, '') || 'section';
 
-function renderPublicMarkdown(markdown: string, pagePath: string): string {
+function reserveHeadingId(headingIds: Map<string, number>, initialId: string): string {
+  const count = headingIds.get(initialId) ?? 0;
+  headingIds.set(initialId, count + 1);
+  return count ? `${initialId}-${count + 1}` : initialId;
+}
+
+function renderPublicMarkdown(markdown: string, pagePath: string, headingIds = new Map<string, number>()): string {
   const proofText = new Map<string, { id: string; text: string }>();
   let proofIndex = 0;
   const prepared = markdown.replace(/\*\*\[(PROOF PLACEHOLDER ([A-Z0-9]+)\s*[—-][^\]]*)\]\*\*|\[(PROOF PLACEHOLDER ([A-Z0-9]+)\s*[—-][^\]]*)\]/g, (whole, boldText: string | undefined, boldId: string | undefined, plainTextMatch: string | undefined, plainId: string | undefined) => {
@@ -90,7 +98,6 @@ function renderPublicMarkdown(markdown: string, pagePath: string): string {
     return marker;
   }).replace(/`\/#consultation`/g, '[`/#consultation`](/#consultation)');
 
-  const headingIds = new Map<string, number>();
   const renderer = new Renderer();
   renderer.html = ({ text }) => escapeHtml(text);
   renderer.image = ({ text }) => escapeHtml(text);
@@ -100,9 +107,7 @@ function renderPublicMarkdown(markdown: string, pagePath: string): string {
       let id = pagePath === '/' && label.toLowerCase() === 'free consultation' ? 'consultation-copy'
         : pagePath === '/' && label.toLowerCase().startsWith('discovery') ? 'discovery'
           : slugify(label);
-      const count = headingIds.get(id) ?? 0;
-      headingIds.set(id, count + 1);
-      if (count) id = `${id}-${count + 1}`;
+      id = reserveHeadingId(headingIds, id);
       return `<h${depth} id="${escapeHtml(id)}">${title}</h${depth}>\n`;
   };
   renderer.link = function ({ href, tokens }: Tokens.Link) {
@@ -131,7 +136,161 @@ function renderPublicMarkdown(markdown: string, pagePath: string): string {
   return String(marked.parse(prepared, { renderer, gfm: true, async: false }));
 }
 
-export function parseDraft(source: string, pagePath: string): GeneratedPage {
+function renderPublicInline(markdown: string, pagePath: string): string {
+  return renderPublicMarkdown(markdown, pagePath).replace(/^<p>/, '').replace(/<\/p>\n?$/, '');
+}
+
+const hubOfferConfig = [
+  { id: 'website-build', heading: 'Standard 4-page site', path: '/website-build/' },
+  { id: 'ai-opportunity-audit', heading: 'DI opportunity audit', path: '/ai-opportunity-audit/' },
+  { id: 'ai-ops-sprint', heading: 'AI Ops Sprint, two weeks', path: '/ai-ops-sprint/' },
+  { id: 'codebase-audit', heading: 'Codebase / website audit + refresh', path: '/codebase-audit/' },
+  { id: 'custom-software', heading: 'Custom software (small tool, fixed scope)', path: '/custom-software/' },
+  { id: 'ai-integration', heading: 'DI integration (SMB, fixed scope)', path: '/ai-integration/' },
+] as const;
+
+interface MarkdownToken {
+  type: string;
+  raw: string;
+  depth?: number;
+  text?: string;
+  href?: string;
+  tokens?: unknown[];
+  [key: string]: unknown;
+}
+interface LocatedToken { token: MarkdownToken; start: number }
+
+const isHeading = (token: MarkdownToken): token is MarkdownToken & { depth: number; text: string } =>
+  token.type === 'heading' && typeof token.depth === 'number' && typeof token.text === 'string';
+const isParagraph = (token: MarkdownToken): token is MarkdownToken & { text: string; tokens: unknown[] } =>
+  token.type === 'paragraph' && typeof token.text === 'string' && Array.isArray(token.tokens);
+
+function locateTokens(tokens: MarkdownToken[], markdown: string): LocatedToken[] {
+  let cursor = 0;
+  return tokens.map((token) => {
+    let start = markdown.indexOf(token.raw, cursor);
+    if (start < 0) start = cursor;
+    cursor = start + token.raw.length;
+    return { token, start };
+  });
+}
+
+function linksIn(tokens: unknown[] = []): Array<{ href: string }> {
+  const links: Array<{ href: string }> = [];
+  for (const value of tokens) {
+    if (!value || typeof value !== 'object') continue;
+    const token = value as MarkdownToken;
+    if (token.type === 'link' && typeof token.href === 'string') links.push({ href: token.href });
+    if (Array.isArray(token.tokens)) links.push(...linksIn(token.tokens));
+  }
+  return links;
+}
+
+function extractHubPresentation(markdown: string, pagePath: string, source: string, sourceName: string): HubPresentation {
+  const markdownOffset = source.indexOf(markdown);
+  const errorAt = (offer: string, offset: number, reason: string): never => {
+    const absoluteOffset = Math.max(0, markdownOffset + offset);
+    const line = source.slice(0, absoluteOffset).split('\n').length;
+    throw new Error(`${sourceName}: ${offer}: ${reason} at line ${line}`);
+  };
+  const tokens = locateTokens(marked.lexer(markdown, { gfm: true }) as unknown as MarkdownToken[], markdown);
+  const headingText = (token: MarkdownToken & { text: string }) => plainText(renderPublicInline(token.text, pagePath));
+  const sectionIndex = tokens.findIndex(({ token }) => isHeading(token) && token.depth === 2 && headingText(token) === 'Find the right starting point');
+  if (sectionIndex < 0) errorAt('Find the right starting point', 0, 'missing required H2 section');
+  const careIndex = tokens.findIndex(({ token }, index) => index > sectionIndex && isHeading(token) && token.depth === 2 && headingText(token) === 'Care is part of the build—not an upgrade');
+  if (careIndex < 0) errorAt('Care is part of the build—not an upgrade', markdown.length, 'missing section boundary H2');
+
+  const sectionTokens = tokens.slice(sectionIndex + 1, careIndex);
+  const offerHeadings = sectionTokens.filter((located) => isHeading(located.token) && located.token.depth === 3);
+  const seen = new Set<string>();
+  const locatedOffers: Array<{ id: string; heading: string; path: string; offset: number; token: MarkdownToken & { depth: number; text: string } }> = [];
+  for (const { token, start } of offerHeadings) {
+    if (!isHeading(token)) continue;
+    const heading = headingText(token);
+    const config = hubOfferConfig.find((offer) => offer.heading === heading);
+    if (!config) {
+      errorAt(heading || 'unknown offer', start, 'unexpected offer heading');
+      continue;
+    }
+    if (seen.has(config.heading)) errorAt(heading, start, 'duplicate offer heading');
+    seen.add(config.heading);
+    locatedOffers.push({ ...config, heading, offset: start, token });
+  }
+  for (let index = 0; index < hubOfferConfig.length; index += 1) {
+    const expected = hubOfferConfig[index]!;
+    const actual = locatedOffers[index];
+    if (!actual) errorAt(expected.heading, tokens[careIndex]!.start, 'missing required offer block');
+    if (actual.heading !== expected.heading) errorAt(expected.heading, actual.offset, `expected offer before “${actual.heading}”`);
+  }
+  if (locatedOffers.length !== hubOfferConfig.length) {
+    const extra = locatedOffers[hubOfferConfig.length]!;
+    errorAt(extra.heading, extra.offset, 'unexpected extra offer block');
+  }
+
+  const stray = sectionTokens.find(({ token, start }) => start < locatedOffers[0]!.offset && token.type !== 'space');
+  if (stray) errorAt('Find the right starting point', stray.start, 'unexpected content before the first offer');
+
+  const headingIds = new Map<string, number>();
+  const beforeHtml = renderPublicMarkdown(markdown.slice(0, locatedOffers[0]!.offset), pagePath, headingIds);
+  const cards: ServiceCard[] = locatedOffers.map((offer, index) => {
+    const blockEnd = locatedOffers[index + 1]?.offset ?? tokens[careIndex]!.start;
+    const content = sectionTokens.filter(({ start }) => start > offer.offset && start < blockEnd)
+      .filter(({ token }) => token.type !== 'space');
+    const paragraphs = content.filter((located): located is LocatedToken & { token: MarkdownToken & { text: string; tokens: unknown[] } } => isParagraph(located.token));
+    if (paragraphs.length !== 5 || content.length !== 5) {
+      errorAt(offer.heading, offer.offset, `expected price, outcome, Included, Not included, and scope paragraphs in order; found ${content.length} block elements`);
+    }
+    const inline = paragraphs.map(({ token }) => renderPublicInline(token.text, pagePath));
+    const plain = inline.map(plainText);
+    const price = plain[0]!;
+    if (!/^\$\d+(?:,\d{3})*(?:[–—-]\$\d+(?:,\d{3})*)?$/.test(price) && price !== 'scoped') {
+      errorAt(offer.heading, paragraphs[0]!.start, `malformed price “${price}”`);
+    }
+    if (inline[0] !== `<strong>${escapeHtml(price)}</strong>`) errorAt(offer.heading, paragraphs[0]!.start, 'price must be one bold display-price value');
+    if (!plain[1]) errorAt(offer.heading, paragraphs[1]!.start, 'missing outcome paragraph');
+    if (/^(?:Included|Not included):/.test(plain[1]!)) errorAt(offer.heading, paragraphs[1]!.start, 'repeated field label in outcome paragraph');
+    if (!plain[2]?.startsWith('Included: ') || !inline[2]?.startsWith('<strong>Included:</strong> ')) {
+      errorAt(offer.heading, paragraphs[2]!.start, 'missing or malformed exact Included: label');
+    }
+    if (!plain[3]?.startsWith('Not included: ') || !inline[3]?.startsWith('<strong>Not included:</strong> ')) {
+      errorAt(offer.heading, paragraphs[3]!.start, 'missing or malformed exact Not included: label');
+    }
+    const scopeToken = paragraphs[4]!.token;
+    const scopeLinks = linksIn(scopeToken.tokens);
+    if (scopeLinks.length !== 1 || scopeLinks[0]!.href !== offer.path) {
+      errorAt(offer.heading, paragraphs[4]!.start, `expected exactly one scope link to ${offer.path}`);
+    }
+    const scopeAnchorHtml = inline[4]!;
+    const scopeAnchor = /^<a\b[^>]*>([\s\S]*)<\/a>$/.exec(scopeAnchorHtml);
+    if (!scopeAnchor) {
+      errorAt(offer.heading, paragraphs[4]!.start, 'scope paragraph must contain only its scope link');
+    }
+    const scopeLinkLabelHtml = scopeAnchor![1]!;
+    const headingHtml = renderPublicInline(offer.token.text, pagePath);
+    const name = plainText(headingHtml);
+    const headingId = reserveHeadingId(headingIds, slugify(name));
+    return {
+      id: offer.id,
+      path: offer.path,
+      headingId,
+      name,
+      nameHtml: headingHtml,
+      price,
+      outcome: plain[1]!,
+      outcomeHtml: inline[1]!,
+      included: plain[2]!,
+      includedHtml: inline[2]!,
+      excluded: plain[3]!,
+      excludedHtml: inline[3]!,
+      scopeLinkLabel: plainText(scopeLinkLabelHtml),
+      scopeLinkLabelHtml,
+    };
+  });
+  const afterHtml = renderPublicMarkdown(markdown.slice(tokens[careIndex]!.start), pagePath, headingIds);
+  return { beforeHtml, cards, afterHtml };
+}
+
+export function parseDraft(source: string, pagePath: string, sourceName = pagePath): GeneratedPage {
   if (!safeRoutes.has(pagePath) && !/^\/[a-z0-9-]+\/$/.test(pagePath)) throw new Error(`Unsupported route: ${pagePath}`);
   const metadataStart = source.indexOf('## Metadata draft');
   const publicStartMatch = /^## Public copy\s*$/m.exec(source);
@@ -157,6 +316,7 @@ export function parseDraft(source: string, pagePath: string): GeneratedPage {
     && !/^[-*]\s/.test(paragraph));
   const summary = summarySource ? plainText(String(marked.parseInline(summarySource, { gfm: true }))) : '';
   const bodyHtml = renderPublicMarkdown(markdown, pagePath);
+  const hubPresentation = pagePath === '/' ? extractHubPresentation(markdown, pagePath, source, sourceName) : undefined;
   return {
     path: pagePath,
     title,
@@ -165,6 +325,7 @@ export function parseDraft(source: string, pagePath: string): GeneratedPage {
     price,
     summary,
     bodyHtml,
+    ...(hubPresentation ? { hubPresentation } : {}),
     faq: [],
     source: 'draft-internal',
     reviewNotes: reviewNotes[pagePath as (typeof routes)[number]] ?? ['Offer boundaries and supporting evidence require owner review.'],
@@ -174,7 +335,7 @@ export function parseDraft(source: string, pagePath: string): GeneratedPage {
 export async function generateDraftContent(rootDir = path.resolve(path.dirname(fileURLToPath(import.meta.url)), '..')) {
   const draftDir = path.join(rootDir, 'docs', 'lanes', 'content');
   const pages = await Promise.all(sourceFiles.map(async (file, index) =>
-    parseDraft(await readFile(path.join(draftDir, file), 'utf8'), routes[index]!)));
+    parseDraft(await readFile(path.join(draftDir, file), 'utf8'), routes[index]!, file)));
   const output = path.join(rootDir, 'src', 'generated', 'draft-pages.json');
   await mkdir(path.dirname(output), { recursive: true });
   await writeFile(output, `${JSON.stringify(pages, null, 2)}\n`, 'utf8');
