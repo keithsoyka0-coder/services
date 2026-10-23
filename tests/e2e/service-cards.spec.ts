@@ -311,6 +311,44 @@ test('hover lift is suppressed for reduced motion', async ({ page }) => {
   expect(await firstCard.evaluate(element => getComputedStyle(element).transform)).toBe('none');
 });
 
+for (const reducedMotion of ['no-preference', 'reduce'] as const) {
+  test(`room glows survive without color-mix support (${reducedMotion})`, async ({ page }) => {
+    await page.emulateMedia({ reducedMotion });
+    let removedMixShadows = 0;
+    await page.route('**/*', async route => {
+      if (route.request().resourceType() !== 'stylesheet') return route.continue();
+      const response = await route.fetch();
+      // Simulate a parser that rejects color-mix shadow declarations. Keep
+      // backdrop-filter enabled: these capabilities must be independent.
+      const css = (await response.text()).replace(/box-shadow\s*:[^;{}]*color-mix\([^;{}]*(?:;|(?=\}))/gi, () => {
+        removedMixShadows++;
+        return '';
+      });
+      return route.fulfill({ response, body: css });
+    });
+    await page.goto('/');
+    expect(removedMixShadows).toBeGreaterThan(0);
+    for (const [index, expected] of cards.entries()) {
+      const item = page.locator(card).nth(index);
+      const shadowAlpha = async () => roomShadowAlpha(
+        await item.evaluate(element => getComputedStyle(element).boxShadow), expected.color,
+      );
+      expect(await item.evaluate(element => getComputedStyle(element).backdropFilter)).toBe('blur(24px)');
+      await expect.poll(shadowAlpha, `${expected.room} fallback rest glow`).toBeCloseTo(0.12, 2);
+      await item.hover();
+      await expect.poll(shadowAlpha, `${expected.room} fallback hover glow`).toBeCloseTo(0.25, 2);
+      await page.mouse.move(0, 0);
+      await item.locator('a.card-link').focus();
+      await expect.poll(shadowAlpha, `${expected.room} fallback keyboard glow`).toBeCloseTo(0.25, 2);
+      expect(await item.locator('a.card-link').evaluate(element => getComputedStyle(element).outlineStyle)).toBe('solid');
+      if (reducedMotion === 'reduce') {
+        expect(await item.evaluate(element => getComputedStyle(element).transform)).toBe('none');
+      }
+      await item.locator('a.card-link').blur();
+    }
+  });
+}
+
 test('card copy stays readable when backdrop blur is unavailable', async ({ page }) => {
   let removedGlassBlock = false;
   await page.route('**/*', async route => {

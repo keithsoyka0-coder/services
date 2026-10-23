@@ -21,7 +21,16 @@ describe('presentation-only room identities', () => {
     expect(serviceCardTheme[id as keyof typeof serviceCardTheme]).toBe(color);
   });
   it.each(Object.entries(serviceCardTheme))('applies the matching %s token only to hub cards', (id, color) => {
-    expect(css).toContain(`${scope}[data-room="${id}"]{--room-glow:${color}}`);
+    const channels = [1, 3, 5].map(offset => parseInt(color.slice(offset, offset + 2), 16)).join(',');
+    expect(css).toContain(`${scope}[data-room="${id}"]{--room-glow:${color};--room-glow-rgb:${channels}}`);
+  });
+  it('guards every color-mix shadow independently of backdrop-filter support', () => {
+    const enhancement = css.match(/@supports\s*\(color:\s*color-mix\(in srgb,\s*white,\s*transparent\)\)\s*\{([\s\S]*?)\n\}/);
+    expect(enhancement, 'color-mix needs its own feature query').not.toBeNull();
+    const guarded = enhancement?.[1] ?? '';
+    expect(guarded).toContain(`${scope}{box-shadow:`);
+    expect(guarded).toContain(`${scope}:hover,${scope}:focus-within{box-shadow:`);
+    expect(css.replace(enhancement?.[0] ?? '', '')).not.toContain('color-mix(');
   });
   it('uses dedicated exact base tokens without changing the shared button foreground', () => {
     expect(css).toContain('--atmosphere-obsidian:#05070B');
