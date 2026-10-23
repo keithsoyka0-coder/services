@@ -130,6 +130,8 @@ describe('hub offer cards in mounted and initial HTML', () => {
     offers.forEach(([id, name, price, href, label], index) => {
       const card = cards[index]!;
       expect(card.getAttribute('aria-labelledby')).toBe(id);
+      expect(card.getAttribute('data-room')).toBe(href.slice(1, -1));
+      expect(card.hasAttribute('style')).toBe(false);
       expect(card.querySelector(`h3#${id}`)?.textContent).toBe(name);
       expect(draft.querySelectorAll(`[id="${id}"]`)).toHaveLength(1);
       expect(card.querySelector('.price')?.textContent).toBe(price);
