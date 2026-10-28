@@ -57,7 +57,7 @@ Find out where Digital Intelligence (DI) could benefit your current business —
 
 A two-week engagement focused on an agreed operations scope: one workflow, rebuilt and working.
 
-**Included:** a mapped workflow and leverage point, one working automation or AI-assisted process, a trained maintainer, complete documentation, and 30 days of fixes on the agreed build.
+**Included:** the two-week sprint; the work and acceptance criteria must be agreed before an engagement is accepted.
 
 **Not included:** an open-ended operations engagement or unspecified follow-on work. A larger problem becomes a second, separately scoped sprint — not scope creep.
 
