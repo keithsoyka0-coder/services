@@ -3,7 +3,6 @@
 **Status: APPROVED FOR INTERNAL PLANNING ONLY — NOT APPROVED FOR PUBLICATION**
 
 See the [planning-only approval record](../../approvals/2026-10-20-lane-drafts-planning-approval.md). Existing release blockers and proposed decisions remain in force.
-
 Route: `/`  
 Status: editorial draft; not approved for publication. Public-copy sections below are separate from internal handoff notes.
 
@@ -16,11 +15,15 @@ SEO intent follows `../seo/seo-plan-matrix.md`. These are editorial proposals, n
 
 ## Public copy
 
-# Look at the work. See how it’s put together.
+# Look at the work. See how it's put together.
 
-Start with what your business needs—not a bigger build than you can use. Choose a defined service, understand its boundaries, and leave with a deliverable you can work with.
+Start with what your business needs — not a bigger build than you can use. Choose a defined service, understand its boundaries, and leave with a deliverable you can work with.
+
+**Who you're hiring:** Keith Soyka — operator-led, New York / remote. 22+ years running frontline operations — P&L, labor, inventory, multi-site transitions — and 17 months building GestaltView solo and unfunded.
 
 **Primary action: Request a free consultation** → `/#consultation`
+
+![Decorative Quarterfinalist medallion](/brand/pepperdine-quarterfinalist-2025.svg) **Validation marker:** Pepperdine University Most Fundable Companies — Quarterfinalist 2025 · Top 100 of 2,300 startups · Solo, unfunded.
 
 ## Find the right starting point
 
@@ -38,11 +41,11 @@ A from-scratch site that explains what you offer and gives people a way to conta
 
 ### DI opportunity audit
 
-**$950**
+**$650**
 
-Find out where Digital Intelligence (DI) could benefit your current business—and where it does not fit.
+Find out where Digital Intelligence (DI) could benefit your current business — and where it does not fit.
 
-**Included:** a standalone assessment of opportunities in your current business.
+**Included:** a standalone assessment of opportunities in your current business: workflow and constraint map, build-versus-buy guidance, and a 90-day action plan ranked by where AI earns its keep.
 
 **Not included:** implementing a website, software tool, or DI integration. This is an audit, not a build commitment.
 
@@ -52,11 +55,11 @@ Find out where Digital Intelligence (DI) could benefit your current business—a
 
 **$2,500**
 
-A two-week engagement focused on an agreed operations scope.
+A two-week engagement focused on an agreed operations scope: one workflow, rebuilt and working.
 
-**Included:** the two-week sprint; the work and acceptance criteria must be agreed before an engagement is accepted.
+**Included:** a mapped workflow and leverage point, one working automation or AI-assisted process, a trained maintainer, complete documentation, and 30 days of fixes on the agreed build.
 
-**Not included:** an open-ended operations engagement or unspecified follow-on work.
+**Not included:** an open-ended operations engagement or unspecified follow-on work. A larger problem becomes a second, separately scoped sprint — not scope creep.
 
 [See the sprint scope](/ai-ops-sprint/)
 
@@ -66,9 +69,9 @@ A two-week engagement focused on an agreed operations scope.
 
 Start with the code or website you already have rather than assume you need to start over.
 
-**Included:** an audit and refresh within a separately agreed scope.
+**Included:** an audit and refresh within a separately agreed scope; price agreed for the existing system before work begins.
 
-**Not included:** an automatic full rebuild or unlimited changes. Price and refresh boundaries are agreed for the existing system.
+**Not included:** an automatic full rebuild or unlimited changes. The agreed scope determines which refresh work is included.
 
 [See the audit-and-refresh scope](/codebase-audit/)
 
@@ -76,9 +79,9 @@ Start with the code or website you already have rather than assume you need to s
 
 **$8,500–$10,000**
 
-A small software tool built around a defined job, with the plan and handoff documented.
+A small software tool built around a defined job, with the plan and handoff documented. The final fee within the range is agreed before work begins.
 
-**Included:** a fixed-scope build, specifications, applicable flow documentation, tested delivery, and the build care package.
+**Included:** a fixed-scope build, implementation and design specifications, applicable flow documentation, tested delivery, and the build care package.
 
 **Not included:** an open-ended product build. Ongoing maintenance, extra work, and logo / branding are separately scoped.
 
@@ -96,41 +99,35 @@ Digital Intelligence (DI) integrated into an agreed small-business workflow, wit
 
 [See the integration scope](/ai-integration/)
 
-## Care is part of the build—not an upgrade
+## Care is part of the build — not an upgrade
 
 A build should not become a mystery when it changes hands. The base build price includes documented build, test, and deployment scripts; a Dockerized build for portability; and a documentation suite: README, quickstart, CurrentState, manifest, index, and handoff guide.
 
 You also receive troubleshooting guidance, file-level provenance, and page contracts wherever pages are part of the build. Those contracts explain each page's purpose, connections, and expected behavior. Workflows and skills are tailored to the agreed stack. API and Digital Intelligence (DI) flows are documented where applicable. Tests must run green before handoff.
 
-You can take the repository to another maintainer. Ongoing maintenance by me is an option, separately scoped—not a condition of keeping the work usable. Audit-only engagements do not promise a software build or its delivery kit.
+You can take the repository to another maintainer. Ongoing maintenance by me is an option, separately scoped — not a condition of keeping the work usable. Audit-only engagements do not promise a software build or its delivery kit.
 
 ## The fit comes first
 
-I do not sell Digital Intelligence (DI) where it does not help, or push a service that is not a sensible purchase for the business. The offer needs to stand on its deliverables and be a wise use of your funds—not on pressure to buy.
+I do not sell Digital Intelligence (DI) where it does not help, or push a service that is not a sensible purchase for the business. Nothing offered here should be something you can get anywhere else — every offer must read, on its own merits, as an incredibly wise use of funds, not on pressure to buy.
 
 I work solo, with low overhead and no agency markup. Scope stays explicit so you can judge what you are paying for and what will need a separate agreement.
 
 ## Consultation first. A plan when you need one.
 
-### Free consultation
-
-**$0**
+### Free consultation — $0
 
 Tell me what you want to achieve. We establish fit and whether it makes sense to continue. This conversation does **not** include free specification work or free design.
 
-### Discovery (scoped, paid)
-
-**$600**
+### Discovery (scoped, paid) — $600
 
 Discovery gathers your goals, constraints, and specifications and presents the route forward. It produces a plan; it is not another name for a consultation call. The discovery fee is credited toward build on acceptance.
 
 Implementation and design are separate specifications for a build. Client-facing specifications are delivered as styled PDFs, with the design covering the theme package and page contracts where relevant.
 
-### Request a free consultation
+### [Request a free consultation → /#consultation](/#consultation)
 
-Tell me what you are trying to do, whether you already have a site or system, and which service interests you. We will start by checking fit—not by assuming a purchase.
-
-**Action label:** Request a free consultation
+Tell me what you are trying to do, whether you already have a site or system, and which service interests you. We will start by checking fit — not by assuming a purchase.
 
 ## Internal handoff — do not render
 

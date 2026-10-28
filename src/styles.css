@@ -80,3 +80,4 @@ form fieldset{backdrop-filter:blur(14px) saturate(125%);-webkit-backdrop-filter:
 @media(max-width:900px){.draft-copy.draft-copy--hub>.service-grid{grid-template-columns:repeat(2,minmax(0,1fr))}}
 @media(max-width:640px){.draft-copy.draft-copy--hub>.service-grid{grid-template-columns:minmax(0,1fr)}.draft-copy.draft-copy--hub>.service-grid>.service-card{padding:28px 26px}}
 @media(prefers-reduced-motion:reduce){.draft-copy.draft-copy--hub>.service-grid>.service-card,.draft-copy.draft-copy--hub>.service-grid>.service-card:hover,.draft-copy.draft-copy--hub>.service-grid>.service-card:focus-within{transform:none;transition:none}}
+.draft-copy__prose img.validation-badge{display:inline-block;width:96px;height:96px;vertical-align:middle;margin:0 18px 8px 0;padding:5px;border:1px solid var(--teal);border-radius:50%;background:linear-gradient(145deg,rgba(63,245,216,.08),rgba(139,92,246,.12));box-shadow:0 0 22px rgba(139,92,246,.2)}

@@ -1,7 +1,9 @@
 import { readFileSync, existsSync } from 'node:fs';
+import { createRequire } from 'node:module';
 import { describe, expect, it } from 'vitest';
 import { serviceCardTheme } from '../src/service-card-theme';
 
+const { JSDOM } = createRequire(import.meta.url)('jsdom');
 const expectedRooms = {
   'website-build': '#00E5FF',
   'ai-opportunity-audit': '#B026FF',
@@ -48,6 +50,14 @@ describe('presentation-only room identities', () => {
       expect(readFileSync('public/fonts/OFL.txt', 'utf8')).toContain('SIL OPEN FONT LICENSE Version 1.1');
     }
     expect(css).not.toMatch(/@import|https?:\/\/.*(?:fonts|\.css)/i);
+  });
+  it('keeps the Quarterfinalist badge as parseable SVG using the shared brand palette', () => {
+    const svg = readFileSync('public/brand/pepperdine-quarterfinalist-2025.svg', 'utf8');
+    const parsed = new JSDOM(svg, { contentType: 'image/svg+xml' });
+    expect(parsed.window.document.documentElement.localName).toBe('svg');
+    for (const color of ['#05070B', '#0A1020', '#F4F2FF', '#3FF5D8', '#8B5CF6']) {
+      expect(svg).toContain(color);
+    }
   });
   it('provides measured fallback metrics and opaque hub glass before blur support', () => {
     expect(css).toContain('font-family:"Geist Fallback"');

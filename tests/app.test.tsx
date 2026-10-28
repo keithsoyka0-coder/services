@@ -19,15 +19,31 @@ describe('authorized local-only Quill draft preview', () => {
     expect(screen.getAllByRole('heading', { level: 1 })).toHaveLength(1);
   });
   it('renders the Quill hub prose and links to all six exact spoke routes', () => {
-    expect(getPage('/')?.h1).toBe('Look at the work. See how it’s put together.');
+    expect(getPage('/')?.h1).toBe("Look at the work. See how it's put together.");
     const { container } = render(<App path="/" />);
-    expect(screen.getByRole('heading', { level: 1 }).textContent).toBe('Look at the work. See how it’s put together.');
-    expect(container.querySelector('.hero .lede')?.textContent).toBe('Explore web builds, audits, custom software, and Digital Intelligence (DI) integration through written scopes, sample deliverables, and my own Portfolio and GestaltView work. Fictional samples are labeled separately. These are ways to inspect my approach—not client results.');
-    expect(screen.getByRole('heading', { name: 'Care is part of the build—not an upgrade' })).toBeTruthy();
+    expect(screen.getByRole('heading', { level: 1 }).textContent).toBe("Look at the work. See how it's put together.");
+    expect(container.querySelector('.hero .lede')).toBeNull();
+    expect(container.querySelector('.draft-copy__prose')?.textContent).toContain('Start with what your business needs — not a bigger build than you can use.');
+    expect(screen.getByRole('heading', { name: 'Care is part of the build — not an upgrade' })).toBeTruthy();
     for (const slug of routes) expect(container.querySelector(`a[href="/${slug}/"]`)).not.toBeNull();
     expect(container.querySelector('#consultation')).not.toBeNull();
     expect(container.querySelector('#discovery')).not.toBeNull();
     expect(container.querySelector('#review-status')).not.toBeNull();
+  });
+  it('renders the owner-supplied validation badge only on the hub without enabling consultation', () => {
+    const { container } = render(<App path="/" />);
+    const badge = container.querySelector<HTMLImageElement>('img.validation-badge');
+    expect(badge?.getAttribute('src')).toBe('/brand/pepperdine-quarterfinalist-2025.svg');
+    const intro = container.querySelector('.draft-copy__prose')!;
+    expect(intro.textContent).toContain('Pepperdine University Most Fundable Companies — Quarterfinalist 2025');
+    expect(intro.textContent).toContain('Top 100 of 2,300 startups · Solo, unfunded.');
+    expect(container.querySelector<HTMLFieldSetElement>('#consultation fieldset')?.disabled).toBe(true);
+    expect(container.querySelector('#consultation button')?.hasAttribute('disabled')).toBe(true);
+    expect(container.querySelectorAll('[data-widget-mount]')).toHaveLength(0);
+    cleanup();
+
+    const { container: spoke } = render(<App path="/website-build/" />);
+    expect(spoke.querySelector('img.validation-badge')).toBeNull();
   });
   it('renders one decorative atmosphere on every route while keeping initial HTML text', () => {
     for (const path of ['/', ...routes.map((slug) => `/${slug}/`), '/does-not-exist/']) {
@@ -72,7 +88,8 @@ describe('authorized local-only Quill draft preview', () => {
   it('labels all prices as draft details, without finalizing scope or proof', () => {
     const html = renderToStaticMarkup(<App path="/" />);
     expect(html).toContain('$2,900');
-    expect(html).toContain('$950');
+    expect(html).toContain('$650');
+    expect(html).not.toContain('$950');
     expect(html).toContain('$8,500–$10,000');
     expect(html).toContain('$9,500');
     expect(html).toContain('Draft prices and scope are not finalized offers.');
@@ -110,7 +127,7 @@ describe('authorized local-only Quill draft preview', () => {
 describe('hub offer cards in mounted and initial HTML', () => {
   const offers = [
     ['standard-4-page-site', 'Standard 4-page site', '$2,900', '/website-build/', 'See the website-build scope'],
-    ['di-opportunity-audit', 'DI opportunity audit', '$950', '/ai-opportunity-audit/', 'See the opportunity-audit scope'],
+    ['di-opportunity-audit', 'DI opportunity audit', '$650', '/ai-opportunity-audit/', 'See the opportunity-audit scope'],
     ['ai-ops-sprint-two-weeks', 'AI Ops Sprint, two weeks', '$2,500', '/ai-ops-sprint/', 'See the sprint scope'],
     ['codebase-website-audit-refresh', 'Codebase / website audit + refresh', 'scoped', '/codebase-audit/', 'See the audit-and-refresh scope'],
     ['custom-software-small-tool-fixed-scope', 'Custom software (small tool, fixed scope)', '$8,500–$10,000', '/custom-software/', 'See the custom-software scope'],
@@ -186,9 +203,9 @@ describe('hub offer cards in mounted and initial HTML', () => {
     expect(protectedMarkup).toMatchInlineSnapshot(`
       [
         {
-          "hero": "<section class="hero"><p class="eyebrow">Quill copy · local draft review</p><h1>Look at the work. See how it’s put together.</h1><p class="lede">Explore web builds, audits, custom software, and Digital Intelligence (DI) integration through written scopes, sample deliverables, and my own Portfolio and GestaltView work. Fictional samples are labeled separately. These are ways to inspect my approach—not client results.</p><a class="btn btn-ghost" href="#review-status">Review unresolved decisions <span aria-hidden="true">↗</span></a></section>",
+          "hero": "<section class="hero"><p class="eyebrow">Quill copy · local draft review</p><h1>Look at the work. See how it's put together.</h1><a class="btn btn-ghost" href="#review-status">Review unresolved decisions <span aria-hidden="true">↗</span></a></section>",
           "path": "/",
-          "review": "<section class="block review-notes" id="review-status" aria-labelledby="review-title"><p class="sec-label">Internal review — unresolved decisions</p><h2 id="review-title">Not ready for publication</h2><p class="notice">Draft prices and scope are not finalized offers. This copy is rendered only for internal review; planning approval is not sales or publication approval.</p><div class="status-grid"><div class="status-card"><span class="status-label">Unresolved</span><h3>Scope approval pending</h3><ul><li>All offer scopes and the proof inventory still need owner review; the sprint, audit/refresh, and opportunity-audit boundaries are especially incomplete.</li><li>Production domain, approved seller/site naming, and the real consultation contact path are not finalized.</li><li>Consultation data handling—including privacy, retention, access, and contact practices—and any rate limits need explicit decisions before collection is enabled.</li><li>Hosting, terms/privacy content and responsibility, branding, revisions, payment timing, schedules, discovery-credit conditions, and commercial details remain unresolved.</li></ul></div><div class="status-card"><span class="status-label">Placeholders, not proof</span><h3>Proof approval pending</h3><p>Proof placeholders below need actual, owner-approved evidence, exact URLs and relevant portfolio backlinks. No placeholder is evidence of completed work.</p><p>External runtime references are unverified references, not client proof or finalized links.</p></div><div class="status-card"><span class="status-label">Unavailable</span><h3>Consultation &amp; publication</h3><p>The form cannot submit. A reviewed contract, separately authorized services database and privacy decisions are still required.</p><p>No production domain, canonical, indexing submission, public sitemap or release metadata is configured. This implementation is restricted to a local draft preview.</p></div></div></section>",
+          "review": "<section class="block review-notes" id="review-status" aria-labelledby="review-title"><p class="sec-label">Internal review — unresolved decisions</p><h2 id="review-title">Not ready for publication</h2><p class="notice">Draft prices and scope are not finalized offers. This copy is rendered only for internal review; planning approval is not sales or publication approval.</p><div class="status-grid"><div class="status-card"><span class="status-label">Unresolved</span><h3>Scope approval pending</h3><ul><li>Proof items W1, W2, A1, A2, S1, T1, T2, I1, and I2 are supplied; S2, C1, and C2 remain unavailable.</li><li>Production domain and approved site naming remain unresolved.</li><li>The consultation path, submission contract, database, and privacy/retention decisions remain owner-controlled; the preview stays disabled.</li><li>Hosting, terms/privacy responsibility, branding, revisions, payment timing, schedules, Discovery-credit conditions, and other commercial details remain unresolved.</li></ul></div><div class="status-card"><span class="status-label">Placeholders, not proof</span><h3>Proof approval pending</h3><p>Proof placeholders below need actual, owner-approved evidence, exact URLs and relevant portfolio backlinks. No placeholder is evidence of completed work.</p><p>External runtime references are unverified references, not client proof or finalized links.</p></div><div class="status-card"><span class="status-label">Unavailable</span><h3>Consultation &amp; publication</h3><p>The form cannot submit. A reviewed contract, separately authorized services database and privacy decisions are still required.</p><p>No production domain, canonical, indexing submission, public sitemap or release metadata is configured. This implementation is restricted to a local draft preview.</p></div></div></section>",
         },
         {
           "hero": "<section class="hero"><a class="back-link" href="/">← All service drafts</a><p class="eyebrow">Quill copy · local draft review</p><h1>Standard 4-page site</h1><p class="lede">Local draft for review; not a final offer or a live purchasing path.</p><a class="btn btn-ghost" href="#review-status">Review unresolved decisions <span aria-hidden="true">↗</span></a></section>",
