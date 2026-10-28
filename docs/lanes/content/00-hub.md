@@ -23,7 +23,7 @@ Start with what your business needs — not a bigger build than you can use. Cho
 
 **Primary action: Request a free consultation** → `/#consultation`
 
-![Decorative Quarterfinalist medallion](/brand/pepperdine-quarterfinalist-2025.svg) **Validation marker:** Pepperdine University Most Fundable Companies — Quarterfinalist 2025 · Top 100 of 2,300 startups · Solo, unfunded.
+![Decorative Quarterfinalist medallion](/brand/pepperdine-quarterfinalist-2025.svg) **Validation marker:** Pepperdine University Most Fundable Companies — Quarterfinalist 2025 · Solo, unfunded.
 
 ## Find the right starting point
 
