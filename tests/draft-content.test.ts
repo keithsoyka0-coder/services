@@ -134,18 +134,45 @@ describe('hub service-card extraction contracts', () => {
       'codebase-website-audit-refresh', 'custom-software-small-tool-fixed-scope', 'di-integration-smb-fixed-scope',
     ]);
     expect(presentation.cards.map(({ path, price }) => [path, price])).toEqual([
-      ['/website-build/', '$2,900'], ['/ai-opportunity-audit/', '$950'], ['/ai-ops-sprint/', '$2,500'],
+      ['/website-build/', '$2,900'], ['/ai-opportunity-audit/', '$650'], ['/ai-ops-sprint/', '$2,500'],
       ['/codebase-audit/', 'scoped'], ['/custom-software/', '$8,500–$10,000'], ['/ai-integration/', '$9,500'],
     ]);
-    expect(presentation.beforeHtml).toContain('Start with what your business needs');
+    expect(presentation.beforeHtml).toContain('Start with what your business needs — not a bigger build than you can use. Choose a defined service, understand its boundaries, and leave with a deliverable you can work with.');
     expect(presentation.beforeHtml).toContain('Primary action: Request a free consultation');
+    expect(presentation.beforeHtml).toContain('Pepperdine University Most Fundable Companies — Quarterfinalist 2025');
+    expect(presentation.beforeHtml).toContain('Pepperdine University Most Fundable Companies — Quarterfinalist 2025 · Top 100 of 2,300 startups · Solo, unfunded.');
+    expect(presentation.beforeHtml).toContain('Top 100 of 2,300 startups · Solo, unfunded.');
+    expect(presentation.beforeHtml).toContain('src="/brand/pepperdine-quarterfinalist-2025.svg"');
     expect(presentation.beforeHtml).toContain('<h2 id="find-the-right-starting-point">Find the right starting point</h2>');
-    expect(presentation.afterHtml).toContain('<h2 id="care-is-part-of-the-build-not-an-upgrade">');
+    expect(presentation.afterHtml).toContain('<h2 id="care-is-part-of-the-build-not-an-upgrade">Care is part of the build — not an upgrade</h2>');
     expect(presentation.afterHtml).toContain('The fit comes first');
     expect(presentation.afterHtml).toContain('Consultation first. A plan when you need one.');
     expect(presentation.afterHtml).toContain('Free consultation');
     expect(presentation.afterHtml).toContain('Discovery (scoped, paid)');
     expect(JSON.stringify(presentation)).not.toContain('Internal handoff');
+  });
+
+  it('reports the supplied proof inventory and only the hub decisions that remain open', () => {
+    expect(hubPage().reviewNotes).toEqual([
+      'Proof items W1, W2, A1, A2, S1, T1, T2, I1, and I2 are supplied; S2, C1, and C2 remain unavailable.',
+      'Production domain and approved site naming remain unresolved.',
+      'The consultation path, submission contract, database, and privacy/retention decisions remain owner-controlled; the preview stays disabled.',
+      'Hosting, terms/privacy responsibility, branding, revisions, payment timing, schedules, Discovery-credit conditions, and other commercial details remain unresolved.',
+    ]);
+  });
+
+  it('renders only the approved local badge asset and keeps arbitrary images inert', () => {
+    const beforeHtml = hubPage().hubPresentation!.beforeHtml;
+    expect(beforeHtml).toContain('<img class="validation-badge" src="/brand/pepperdine-quarterfinalist-2025.svg" alt="" width="96" height="96" aria-hidden="true">');
+
+    const remoteImageSource = hubSource.replace(
+      '**Primary action: Request a free consultation** → `/#consultation`',
+      '![Remote image](https://example.com/badge.svg)\n\n**Primary action: Request a free consultation** → `/#consultation`',
+    );
+    const remoteImageHtml = hubPage(remoteImageSource).hubPresentation!.beforeHtml;
+    expect(remoteImageHtml.match(/<img\b/g)).toHaveLength(1);
+    expect(remoteImageHtml).not.toContain('src="https://example.com/badge.svg"');
+    expect(remoteImageHtml).toContain('Remote image');
   });
 
   it('preserves source copy, inline emphasis, scope labels and exact safe fragments', () => {
@@ -165,7 +192,7 @@ describe('hub service-card extraction contracts', () => {
 
   it('uses modified source outcome and scope label instead of a second copy store', () => {
     const changed = replaceOffer(hubSource, offerHeadings[1]!, (block) => block
-      .replace('Find out where Digital Intelligence (DI) could benefit your current business—and where it does not fit.', 'Changed outcome from fixture.')
+      .replace('Find out where Digital Intelligence (DI) could benefit your current business — and where it does not fit.', 'Changed outcome from fixture.')
       .replace('See the opportunity-audit scope', 'Changed scope label'));
     const card = hubPage(changed).hubPresentation!.cards[1]!;
     expect(card.outcome).toBe('Changed outcome from fixture.');
@@ -175,8 +202,8 @@ describe('hub service-card extraction contracts', () => {
 
   it('rejects missing, extra, duplicate, and unknown offer blocks with source and location', () => {
     const missing = hubSource.replace(/### DI opportunity audit[\s\S]*?(?=\n### AI Ops Sprint, two weeks)/, '');
-    const extra = hubSource.replace('\n## Care is part of the build—not an upgrade', '\n### Unapproved additional offer\n\n**$1**\n\nOutcome.\n\n**Included:** item.\n\n**Not included:** item.\n\n[See scope](/website-build/)\n\n## Care is part of the build—not an upgrade');
-    const duplicate = hubSource.replace('\n## Care is part of the build—not an upgrade', `\n${hubSource.slice(hubSource.indexOf('### Standard 4-page site'), hubSource.indexOf('### DI opportunity audit'))}\n## Care is part of the build—not an upgrade`);
+    const extra = hubSource.replace('\n## Care is part of the build — not an upgrade', '\n### Unapproved additional offer\n\n**$1**\n\nOutcome.\n\n**Included:** item.\n\n**Not included:** item.\n\n[See scope](/website-build/)\n\n## Care is part of the build — not an upgrade');
+    const duplicate = hubSource.replace('\n## Care is part of the build — not an upgrade', `\n${hubSource.slice(hubSource.indexOf('### Standard 4-page site'), hubSource.indexOf('### DI opportunity audit'))}\n## Care is part of the build — not an upgrade`);
     for (const [fixture, expectedOffer] of [[missing, 'DI opportunity audit'], [extra, 'Unapproved additional offer'], [duplicate, 'Standard 4-page site']] as const) {
       expect(() => hubPage(fixture, 'malformed hub')).toThrow(new RegExp(`malformed hub.*${expectedOffer}.*(?:line|offset)`, 'i'));
     }

@@ -39,10 +39,10 @@ const sourceFiles = [
 ] as const;
 const reviewNotes: Record<(typeof routes)[number], string[]> = {
   '/': [
-    'All offer scopes and the proof inventory still need owner review; the sprint, audit/refresh, and opportunity-audit boundaries are especially incomplete.',
-    'Production domain, approved seller/site naming, and the real consultation contact path are not finalized.',
-    'Consultation data handling—including privacy, retention, access, and contact practices—and any rate limits need explicit decisions before collection is enabled.',
-    'Hosting, terms/privacy content and responsibility, branding, revisions, payment timing, schedules, discovery-credit conditions, and commercial details remain unresolved.',
+    'Proof items W1, W2, A1, A2, S1, T1, T2, I1, and I2 are supplied; S2, C1, and C2 remain unavailable.',
+    'Production domain and approved site naming remain unresolved.',
+    'The consultation path, submission contract, database, and privacy/retention decisions remain owner-controlled; the preview stays disabled.',
+    'Hosting, terms/privacy responsibility, branding, revisions, payment timing, schedules, Discovery-credit conditions, and other commercial details remain unresolved.',
   ],
   '/website-build/': [
     'Approved proof samples are not supplied; hosting, changes/revisions, schedule, payment split, and terms/privacy content and responsibility remain unsettled.',
@@ -100,11 +100,13 @@ function renderPublicMarkdown(markdown: string, pagePath: string, headingIds = n
 
   const renderer = new Renderer();
   renderer.html = ({ text }) => escapeHtml(text);
-  renderer.image = ({ text }) => escapeHtml(text);
+  renderer.image = ({ href, text }) => pagePath === '/' && href === '/brand/pepperdine-quarterfinalist-2025.svg'
+    ? '<img class="validation-badge" src="/brand/pepperdine-quarterfinalist-2025.svg" alt="" width="96" height="96" aria-hidden="true">'
+    : escapeHtml(text);
   renderer.heading = function ({ tokens, depth }: Tokens.Heading) {
       const title = this.parser.parseInline(tokens);
       const label = plainText(title);
-      let id = pagePath === '/' && label.toLowerCase() === 'free consultation' ? 'consultation-copy'
+      let id = pagePath === '/' && label.toLowerCase().startsWith('free consultation') ? 'consultation-copy'
         : pagePath === '/' && label.toLowerCase().startsWith('discovery') ? 'discovery'
           : slugify(label);
       id = reserveHeadingId(headingIds, id);
@@ -197,8 +199,9 @@ function extractHubPresentation(markdown: string, pagePath: string, source: stri
   const headingText = (token: MarkdownToken & { text: string }) => plainText(renderPublicInline(token.text, pagePath));
   const sectionIndex = tokens.findIndex(({ token }) => isHeading(token) && token.depth === 2 && headingText(token) === 'Find the right starting point');
   if (sectionIndex < 0) errorAt('Find the right starting point', 0, 'missing required H2 section');
-  const careIndex = tokens.findIndex(({ token }, index) => index > sectionIndex && isHeading(token) && token.depth === 2 && headingText(token) === 'Care is part of the build—not an upgrade');
-  if (careIndex < 0) errorAt('Care is part of the build—not an upgrade', markdown.length, 'missing section boundary H2');
+  const careHeadings = new Set(['Care is part of the build—not an upgrade', 'Care is part of the build — not an upgrade']);
+  const careIndex = tokens.findIndex(({ token }, index) => index > sectionIndex && isHeading(token) && token.depth === 2 && careHeadings.has(headingText(token)));
+  if (careIndex < 0) errorAt('Care is part of the build — not an upgrade', markdown.length, 'missing section boundary H2');
 
   const sectionTokens = tokens.slice(sectionIndex + 1, careIndex);
   const offerHeadings = sectionTokens.filter((located) => isHeading(located.token) && located.token.depth === 3);
